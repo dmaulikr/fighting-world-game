@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 import {
     emailTextChanged,
@@ -29,13 +29,40 @@ class LoginForm extends Component {
         this.props.loginWithFacebook();
     }
 
-    renderButtonOrSpinner() {
-        if (this.props.loading) return <Spinner size="large" />;
+    renderButtonsOrSpinner() {
+        if (this.props.loading) return (
+            <CardSection>
+                <Spinner size="large" />
+            </CardSection>
+        );
+
+        const { regularTextStyle, facebookButtonStyle, facebookButtonTextStyle} = styles;
+        const facebokBtnStyles = {
+            additionalButtonStyle: facebookButtonStyle,
+            additionalTextStyle: facebookButtonTextStyle
+        };
 
         return (
-            <Button onPress={this.onEmailLoginOrRegisterPress.bind(this)}>
-                Login / Register
-            </Button>
+            <View>
+                <CardSection>
+                    <Button onPress={this.onEmailLoginOrRegisterPress.bind(this)}>
+                        Login / Register
+                    </Button>   
+                </CardSection>
+
+                <Text style={regularTextStyle}>
+                    or
+                </Text>
+
+                <CardSection>
+                    <Button
+                        onPress={this.onFacebookLoginPress.bind(this)}
+                        additionalStyles={facebokBtnStyles}
+                    >
+                        Login With Facebook
+                    </Button>
+                </CardSection>
+            </View>
         );
     }
 
@@ -65,19 +92,8 @@ class LoginForm extends Component {
                     {this.props.error}
                 </Text>
 
-                <CardSection>
-                    {this.renderButtonOrSpinner()}
-                </CardSection>
-
-                <Text style={styles.regularTextStyle}>
-                    or
-                </Text>
-
-                <CardSection>
-                    <Button onPress={this.onFacebookLoginPress.bind(this)}>
-                        Login With Facebook
-                    </Button>
-                </CardSection>
+                {this.renderButtonsOrSpinner()}
+                
             </Card>
         );
     }
@@ -92,6 +108,13 @@ const styles = {
     regularTextStyle: {
         fontSize: 20,
         alignSelf: 'center'
+    },
+    facebookButtonStyle: {
+        backgroundColor: '#4267B2',
+        borderColor: '#4267B2'
+    },
+    facebookButtonTextStyle: {
+        color: '#fff'
     }
 };
 

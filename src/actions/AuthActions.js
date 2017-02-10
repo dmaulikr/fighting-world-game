@@ -49,15 +49,17 @@ export const loginOrRegisterUserWithEmail = ({ email, password }) => {
 // it will obtain the user's info from facebook and then perform firebase login
 export const loginWithFacebook = () => {
 	return (dispatch) => {
+		dispatch({ type: LOGIN_USER_START });
+
 		const auth = firebase.auth();
 		const provider = firebase.auth.FacebookAuthProvider;
 
 		LoginManager.logInWithReadPermissions(['public_profile'])
 			.then(loginResult => {
+				console.log(loginResult)
 				if (loginResult.isCancelled) {
-					console.log('user canceled');
-				return;
-			}
+					() => loginUserFail(dispatch)
+				}
 			AccessToken.getCurrentAccessToken()
 				.then(accessTokenData => {
 					const credential = provider.credential(accessTokenData.accessToken);
@@ -74,6 +76,7 @@ const loginUserFail = (dispatch) => {
 };
 
 const loginUserSuccess = (dispatch, user) => {
+	console.log(user)
   dispatch({
     type: LOGIN_USER_SUCCESS,
     payload: user
