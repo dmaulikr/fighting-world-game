@@ -30,13 +30,15 @@ class LoginForm extends Component {
     }
 
     renderButtonsOrSpinner() {
-        if (this.props.loading) return (
-            <CardSection>
-                <Spinner size="large" />
-            </CardSection>
-        );
+        if (this.props.loading) {
+            return (
+                <CardSection>
+                    <Spinner size="large" />
+                </CardSection>
+            );
+        }
 
-        const { regularTextStyle, facebookButtonStyle, facebookButtonTextStyle} = styles;
+        const { regularTextStyle, facebookButtonStyle, facebookButtonTextStyle } = styles;
         const facebokBtnStyles = {
             additionalButtonStyle: facebookButtonStyle,
             additionalTextStyle: facebookButtonTextStyle

@@ -48,37 +48,35 @@ export const loginOrRegisterUserWithEmail = ({ email, password }) => {
 // this function will log user in with facebook
 // it will obtain the user's info from facebook and then perform firebase login
 export const loginWithFacebook = () => {
-	return (dispatch) => {
-		dispatch({ type: LOGIN_USER_START });
+    return (dispatch) => {
+        dispatch({ type: LOGIN_USER_START });
 
-		const auth = firebase.auth();
-		const provider = firebase.auth.FacebookAuthProvider;
+        const auth = firebase.auth();
+        const provider = firebase.auth.FacebookAuthProvider;
 
-		LoginManager.logInWithReadPermissions(['public_profile'])
-			.then(loginResult => {
-				console.log(loginResult)
-				if (loginResult.isCancelled) {
-					() => loginUserFail(dispatch)
-				}
-			AccessToken.getCurrentAccessToken()
-				.then(accessTokenData => {
-					const credential = provider.credential(accessTokenData.accessToken);
-					return auth.signInWithCredential(credential);
-				})
-				.then(user => loginUserSuccess(dispatch, user))
-          		.catch(() => loginUserFail(dispatch));
-		});
-	}
-}
+        LoginManager.logInWithReadPermissions(['public_profile'])
+            .then(loginResult => {
+                if (loginResult.isCancelled) {
+                    return loginUserFail(dispatch);
+                }
+            AccessToken.getCurrentAccessToken()
+                .then(accessTokenData => {
+                    const credential = provider.credential(accessTokenData.accessToken);
+                    return auth.signInWithCredential(credential);
+                })
+                .then(user => loginUserSuccess(dispatch, user))
+                .catch(() => loginUserFail(dispatch));
+            });
+    };
+};
 
 const loginUserFail = (dispatch) => {
-  dispatch({ type: LOGIN_USER_FAIL });
+	dispatch({ type: LOGIN_USER_FAIL });
 };
 
 const loginUserSuccess = (dispatch, user) => {
-	console.log(user)
-  dispatch({
-    type: LOGIN_USER_SUCCESS,
-    payload: user
-  });
+	dispatch({
+		type: LOGIN_USER_SUCCESS,
+		payload: user
+	});
 };
