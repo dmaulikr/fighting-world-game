@@ -1,12 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Text, View } from 'react-native';
+import { Text, View, TouchableOpacity } from 'react-native';
+import { Actions } from 'react-native-router-flux';
 
 import {
     emailTextChanged,
     passwordTextChanged,
     loginOrRegisterUserWithEmail,
-    loginWithFacebook
+    loginWithFacebook,
+    newUsernameTextChanged,
+    testUsername
 } from '../actions';
 
 import { Card, CardSection, Input, Button, Spinner } from './common';
@@ -50,6 +53,12 @@ class LoginForm extends Component {
                     <Button onPress={this.onEmailLoginOrRegisterPress.bind(this)}>
                         Login / Register
                     </Button>   
+                </CardSection>
+
+                <CardSection>
+                    <TouchableOpacity onPress={() => Actions.forgotPassword()}>
+                        <Text>Forgot Password</Text>
+                    </TouchableOpacity>   
                 </CardSection>
 
                 <Text style={regularTextStyle}>
@@ -111,6 +120,12 @@ const styles = {
         fontSize: 20,
         alignSelf: 'center'
     },
+    textContainerStyle: {
+        flex: 1,
+        flexDirection: 'column',
+        borderColor: 'red',
+        borderWidth: 1
+    },
     facebookButtonStyle: {
         backgroundColor: '#4267B2',
         borderColor: '#4267B2'
@@ -121,15 +136,17 @@ const styles = {
 };
 
 const mapStateToProps = state => {
-    const { email, password, error, loading } = state.auth;
-    return { email, password, error, loading };
+    const { email, password, error, loading, newUsername } = state.auth;
+    return { email, password, error, loading, newUsername };
 };
 
 const componentActions = {
     emailTextChanged,
     passwordTextChanged,
     loginOrRegisterUserWithEmail,
-    loginWithFacebook
+    loginWithFacebook,
+    newUsernameTextChanged,
+    testUsername
 };
 
 export default connect(mapStateToProps, componentActions)(LoginForm);
