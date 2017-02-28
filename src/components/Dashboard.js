@@ -1,28 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Text, View } from 'react-native';
+import { Text, View, TouchableOpacity } from 'react-native';
+import { Actions } from 'react-native-router-flux';
 
-import { fetchProfile } from '../actions';
+import {  } from '../actions';
+import ListOfUsers from './ListOfUsers';
 
 class Dashboaord extends Component {
     componentDidMount() {
-        this.props.fetchProfile();
+
     }
 
     render() {
-        if (!this.props.profile) {
-            return (
-                <View>
-                    <Text>Loading...</Text>
-                </View>
-            );
-        }
-
         return (
             <View>
-                <Text>
-                Welcome {this.props.profile ? this.props.profile.personal.username : 'Loading...'}!
-                </Text>
+                <Text>Dashboard</Text>
             </View>
         );
     }
@@ -34,7 +26,7 @@ const mapStateToProps = state => {
 };
 
 const componentActions = {
-    fetchProfile
+
 };
 
 export default connect(mapStateToProps, componentActions)(Dashboaord);

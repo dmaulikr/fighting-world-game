@@ -1,23 +1,21 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Text, Image, View, TouchableOpacity } from 'react-native';
-import { Actions } from 'react-native-router-flux';
-
-import { Card, CardSection, Button } from './common';
+import { Card, CardSection, } from './common';
 
 import {
-    signOut,
-    fetchProfile
+    fetchProfile,
+    sendFriendRequest,
+    setRequestIcon,
+    approveFriendRequest,
+    rejectFriend
 } from '../actions';
 
-class User extends Component {
+class ViewAUser extends Component {
 
     componentDidMount() {
-        this.props.fetchProfile(this.props.user.uid);
-    }
-
-    signOutButtonPress() {
-        this.props.signOut();
+        this.props.fetchProfile(this.props.userToFetch);
+        this.props.setRequestIcon(this.props.userToFetch);
     }
 
     renderPhoto() {
@@ -38,14 +36,44 @@ class User extends Component {
     }
 
     renderButtons() {
-        const { textStyle } = styles;
-        const { username } = this.props.profile.personal;
+        const { textStyle, plusStyle, minusStyle, delReqStyle } = styles;
+        const { userToFetch, areFriends } = this.props;
+        let icon = (
+            <TouchableOpacity onPress={() => this.props.rejectFriend(userToFetch)}>
+                <Text style={[textStyle, minusStyle]}>Delete Friend?</Text>
+            </TouchableOpacity>
+        );
+        if (areFriends === 'notFriends') {
+            icon = (
+                <TouchableOpacity onPress={() => this.props.sendFriendRequest(userToFetch)}>
+                    <Text style={[textStyle, plusStyle]}>Add To Friends?</Text>
+                </TouchableOpacity>
+            );
+        }
+        if (areFriends === 'reqReceived') {
+            icon = (
+                <TouchableOpacity onPress={() => this.props.rejectFriend(userToFetch)}>
+                    <Text style={[textStyle, delReqStyle]}>Delete Request?</Text>
+                </TouchableOpacity>
+            );
+        }
+        if (areFriends === 'reqSent') {
+            icon = (
+                <View style={{ flexDirection: 'row' }}>
+                    <TouchableOpacity onPress={() => this.props.approveFriendRequest(userToFetch)}>
+                        <Text style={[textStyle, plusStyle, { marginRight: 4 }]}>Approve</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => this.props.rejectFriend(userToFetch)}>
+                        <Text style={[textStyle, minusStyle, { marginLeft: 4 }]}>Reject</Text>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
+
         return (
             <CardSection>
                 <View style={[styles.textContainerStyle, { flexDirection: 'row', justifyContent: 'space-around' }]}>
-                    <TouchableOpacity onPress={() => Actions.friends({ title: username })}>
-                        <Text style={[textStyle, { fontWeight: 'bold', color: '#191970' }]}>Friends</Text>
-                    </TouchableOpacity>
+                   {icon}
 
                     <TouchableOpacity onPress={() => console.log('messages')}>
                         <Text style={[textStyle, { fontWeight: 'bold', color: '#191970' }]}>Messages</Text>
@@ -107,28 +135,10 @@ class User extends Component {
         );
     }
 
-    renderSignOutButton() {
-        const { signOutButtonStyle, signOutButtonTextStyle } = styles;
-        const signOutBtnStyles = {
-            additionalButtonStyle: signOutButtonStyle,
-            additionalTextStyle: signOutButtonTextStyle
-        };
-
-        return (
-            <Button
-                onPress={this.signOutButtonPress.bind(this)}
-                additionalStyles={signOutBtnStyles}
-            >
-                Sign Out
-            </Button>
-        );
-    }
-
     render() {
-        if (this.props.profile && this.props.user) {
+        if (this.props.profile && this.props.areFriends) {
             return (
-                <Card>
-                    
+                <Card>   
                     {this.renderPhoto()}
 
                     {this.renderButtons()}
@@ -138,10 +148,6 @@ class User extends Component {
                     {this.renderEmail()}
 
                     {this.renderStats()}
-                    
-                    <CardSection>
-                        {this.renderSignOutButton()}
-                    </CardSection>
                 </Card>
             );
         }
@@ -156,6 +162,18 @@ class User extends Component {
 }
 
 const styles = {
+    plusStyle: {
+        fontWeight: 'bold',
+        color: '#4678C0'
+    },
+    minusStyle: {
+        fontWeight: 'bold',
+        color: '#FE6347'
+    },
+    delReqStyle: {
+        fontWeight: 'bold',
+        color: 'orange'
+    },
     textStyle: {
         fontSize: 20,
         alignSelf: 'center',
@@ -185,13 +203,16 @@ const styles = {
 };
 
 const mapStateToProps = state => {
-    const { user, profile } = state.auth;
-    return { user, profile };
+    const { profile, areFriends } = state.auth;
+    return { profile, areFriends };
 };
 
 const componentActions = {
-    signOut,
-    fetchProfile
+    fetchProfile,
+    sendFriendRequest,
+    approveFriendRequest,
+    setRequestIcon,
+    rejectFriend
 };
 
-export default connect(mapStateToProps, componentActions)(User);
+export default connect(mapStateToProps, componentActions)(ViewAUser);

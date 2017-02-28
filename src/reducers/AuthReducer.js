@@ -24,7 +24,9 @@ import {
     NEW_EMAIL_TEXT_CHANGED_CHANGE_EMAIL,
     PASSWORD_TEXT_CHANGED_CHANGE_EMAIL,
     PHOTO_UPLOADING_START,
-    PHOTO_UPLOADING_END
+    PHOTO_UPLOADING_END,
+    USERNAMES_FETCH_SUCCESS,
+    SET_REQ_ICON
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -49,7 +51,9 @@ const INITIAL_STATE = {
   passwordDeleteAcc: '',
   oldEmailChangeEmail: '',
   newEmailChangeEmail: '',
-  passwordChangeEmail: ''
+  passwordChangeEmail: '',
+  usernames: null,
+  areFriends: ''
 };
 
 export default (state = INITIAL_STATE, action) => {
@@ -106,6 +110,10 @@ export default (state = INITIAL_STATE, action) => {
       return { ...state, loadingPhoto: true };
     case PHOTO_UPLOADING_END:
       return { ...state, loadingPhoto: false };
+    case USERNAMES_FETCH_SUCCESS:
+      return { ...state, usernames: action.payload };
+    case SET_REQ_ICON:
+      return { ...state, areFriends: action.payload };
     default:
       return state;
   }

@@ -27,7 +27,9 @@ import {
     NEW_EMAIL_TEXT_CHANGED_CHANGE_EMAIL,
     PASSWORD_TEXT_CHANGED_CHANGE_EMAIL,
     PHOTO_UPLOADING_START,
-    PHOTO_UPLOADING_END
+    PHOTO_UPLOADING_END,
+    USERNAMES_FETCH_SUCCESS,
+    SET_REQ_ICON
 } from './types';
 
 ////////////////////////////////////////////////////////////// TEXT FIELDS ///////////////////////
@@ -203,14 +205,18 @@ const createProfile = (dispatch, username, currentUser) => {
         fighter: {
             level: 0,
             healthCurrent: 10,
-            halthTotal: 10,
+            healthTotal: 10,
             power: 1,
             agility: 1,
         },
         stats: { wins: 0, losses: 0, draws: 0, disconnects: 0 },
-        personal: { username },
-        currentGame: null,
-        pastGames: []
+        personal: {
+            username,
+            email: currentUser.email ? currentUser.email : '',
+            displayName: currentUser.displayName ? currentUser.displayName : ''
+        },
+        photoURL: currentUser.photoURL ? currentUser.photoURL : null,
+        currentGame: null
     };
     firebase.database().ref(`/profiles/${currentUser.uid}`)
         .set(newProfile)
@@ -291,7 +297,8 @@ export const getProvider = () => {
     };
 };
 
-// this function will delete profile (if exists), then username (if exists), then user
+// this function will delete profile (if exists), image in storage (if exists)
+// and then username (if exists), then user
 const deleteUser = (dispatch, currentUser) => {
     const { uid } = currentUser;
     let username = null;
@@ -305,6 +312,11 @@ const deleteUser = (dispatch, currentUser) => {
                 firebase.database().ref('profiles').child(uid).remove();
                 console.log('removed profile');
             }
+        })
+        .then(() => {
+            firebase.storage().ref('images').child(currentUser.uid).delete()
+                .then(() => console.log('image deleted'))
+                .catch((error) => console.log(error));
         })
         .then(() => {
             firebase.database().ref(`/usernames/${username}`)
@@ -407,7 +419,11 @@ export const reauthenticateWithFaceAndUpdateEmail = newEm => {
 // this function will update email
 const updateEmail = (dispatch, currentUser, newEm) => {
     currentUser.updateEmail(newEm)
-        .then(() => updateUserSuccess(dispatch, currentUser))
+        .then(() => {
+            firebase.database().ref(`profiles/${currentUser.uid}/personal/email`).set(newEm)
+                .then(() => updateUserSuccess(dispatch, currentUser))
+                .catch(error => console.log(error));
+        })
         .catch(error => console.log(error));
 };
 
@@ -422,17 +438,40 @@ const updateUserSuccess = (dispatch, user) => {
     Actions.user();
 };
 
+// export const viewUser = (user = null) => {
+//     return () => {
+//         if (!user) {
+//             const { currentUser } = firebase.auth();
+//             firebase.database().ref(`/profiles/${currentUser.uid}`)
+//                 .on('value', snapshot => {
+//                     Actions.user({ title: snapshot.val().personal.username });
+//                 });
+//         }
+//     };
+// };
+
 /////////////////////////////////////////////////// PROFILE //////////////////////////////////////
 
-// this function will fetch a user's profile
-export const fetchProfile = () => {
-    const { currentUser } = firebase.auth();
-
+// this function will fetch a user's profile,
+// if uid is not provided we'll assume to fetch a user's own profile
+export const fetchProfile = (uid = null) => {
+    let id = uid;
+    if (!uid) {
+        id = firebase.auth().currentUser.uid;
+    }
     return dispatch => {
-        firebase.database().ref(`/profiles/${currentUser.uid}`)
+        firebase.database().ref(`/profiles/${id}`)
             .on('value', snapshot => {
                 dispatch({ type: PROFILE_FETCH_SUCCESS, payload: snapshot.val() });
             });
+    };
+};
+
+// sets profile to null
+export const setProfileNull = () => {
+    return {
+        type: PROFILE_FETCH_SUCCESS,
+        payload: null
     };
 };
 
@@ -449,7 +488,7 @@ export const updateUsername = (username) => {
                 }
             })
             .then(() => {
-                firebase.database().ref(`profiles/${currentUser.uid}/personal`).set({ username })
+                firebase.database().ref(`profiles/${currentUser.uid}/personal/username`).set(username)
                     .then(() => {
                         firebase.database().ref('usernames').child(oldUsername).remove()
                             .then(() => {
@@ -467,7 +506,11 @@ export const updateUsername = (username) => {
 export const updateUserProfile = (user, displayName) => {
     return dispatch => {
         user.updateProfile({ displayName })
-        .then(() => updateUserSuccess(dispatch, user))
+        .then(() => {
+            firebase.database().ref(`profiles/${user.uid}/personal/displayName`).set(displayName)
+                .then(() => updateUserSuccess(dispatch, user))
+                .catch(error => console.log(error));
+        })
         .catch(error => console.log(error));
     };
 };
@@ -492,7 +535,14 @@ export const chooseAndUploadImage = image => {
             currentUser.updateProfile({
                 photoURL: snapshot.a.downloadURLs[0]
             })
-            .then(() => updateUserSuccess(dispatch, currentUser))
+            .then(() => {
+                firebase.database().ref(`profiles/${currentUser.uid}/photoURL`).set(snapshot.a.downloadURLs[0])
+                    .then(() => updateUserSuccess(dispatch, currentUser))
+                    .catch(error => {
+                        console.log(error);
+                        dispatch({ type: PHOTO_UPLOADING_END });
+                    });
+            })
             .catch(error => {
                 console.log(error);
                 dispatch({ type: PHOTO_UPLOADING_END });
@@ -502,5 +552,80 @@ export const chooseAndUploadImage = image => {
             console.log(error);
             dispatch({ type: PHOTO_UPLOADING_END });
         });
+    };
+};
+
+export const fetchUsernames = () => {
+    console.log('running')
+    return dispatch => {
+        firebase.database().ref('usernames')
+            .on('value', snapshot => {
+                dispatch({ type: USERNAMES_FETCH_SUCCESS, payload: snapshot.val() });
+            });
+    };
+};
+
+// export const friendsFetch = () => {
+//     const { currentUser } = firebase.auth();
+
+//     return dispatch => {
+//         firebase.database().ref(`/users/${currentUser.uid}/employees`)
+//             .on('value', snapshot => {
+//                 dispatch({ type: EMPLOYEES_FETCH_SUCCESS, payload: snapshot.val() });
+//             });
+//     };
+// };
+
+export const setRequestIcon = (userId) => {
+    const { currentUser } = firebase.auth();
+    return dispatch => {
+        firebase.database().ref(`profiles/${userId}/people/${currentUser.uid}`).once('value')
+            .then(snapshot => {
+                if (snapshot.exists()) {
+                    dispatch({ type: SET_REQ_ICON, payload: snapshot.val() });
+                } else {
+                    dispatch({ type: SET_REQ_ICON, payload: 'notFriends' });
+                }
+            });
+    };
+};
+
+export const sendFriendRequest = (userId) => {
+    const { currentUser } = firebase.auth();
+    return dispatch => {
+        firebase.database().ref(`profiles/${userId}/people/${currentUser.uid}`).set('reqReceived')
+            .then(() => {
+                firebase.database().ref(`profiles/${currentUser.uid}/people/${userId}`).set('reqSent')
+                    .then(() => console.log('req sent'))
+                    .catch(er => console.log(er));
+            })
+            .catch(error => console.log(error));
+    };
+};
+
+export const approveFriendRequest = userId => {
+    const { currentUser } = firebase.auth();
+    return dispatch => {
+        firebase.database().ref(`profiles/${userId}/people/${currentUser.uid}`).set('friends')
+            .then(() => {
+                firebase.database().ref(`profiles/${currentUser.uid}/people/${userId}`).set('friends')
+                    .then(() => console.log('now friends'))
+                    .catch(er => console.log(er));
+            })
+            .catch(error => console.log(error));
+    };
+};
+
+// this function to be used to delete friends, reject friend requests or cancel friend requests
+export const rejectFriend = userId => {
+    const { currentUser } = firebase.auth();
+    return dispatch => {
+        firebase.database().ref(`profiles/${currentUser.uid}/people`).child(userId).remove()
+            .then(() => {
+                firebase.database().ref(`profiles/${userId}/people`).child(currentUser.uid).remove()
+                    .then(() => console.log('rejected req'))
+                    .catch(er => console.log(er));
+            })
+            .catch(error => console.log(error));
     };
 };
