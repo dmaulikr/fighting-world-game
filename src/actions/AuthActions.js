@@ -29,7 +29,11 @@ import {
     PHOTO_UPLOADING_START,
     PHOTO_UPLOADING_END,
     USERNAMES_FETCH_SUCCESS,
-    SET_REQ_ICON
+    SET_REQ_ICON,
+    FETCH_FRIENDS_SUCCESS,
+    FETCH_FRIEND_REQS_SUCCESS,
+    FETCH_FRIEND_SENT_SUCCESS,
+    EMPTY_PEOPLE
 } from './types';
 
 ////////////////////////////////////////////////////////////// TEXT FIELDS ///////////////////////
@@ -438,29 +442,25 @@ const updateUserSuccess = (dispatch, user) => {
     Actions.user();
 };
 
-// export const viewUser = (user = null) => {
-//     return () => {
-//         if (!user) {
-//             const { currentUser } = firebase.auth();
-//             firebase.database().ref(`/profiles/${currentUser.uid}`)
-//                 .on('value', snapshot => {
-//                     Actions.user({ title: snapshot.val().personal.username });
-//                 });
-//         }
-//     };
-// };
+export const viewUser = (user = null) => {
+    return () => {
+        if (!user) {
+            const { currentUser } = firebase.auth();
+            firebase.database().ref(`/profiles/${currentUser.uid}`)
+                .on('value', snapshot => {
+                    Actions.user({ title: snapshot.val().personal.username });
+                });
+        }
+    };
+};
 
 /////////////////////////////////////////////////// PROFILE //////////////////////////////////////
 
-// this function will fetch a user's profile,
-// if uid is not provided we'll assume to fetch a user's own profile
-export const fetchProfile = (uid = null) => {
-    let id = uid;
-    if (!uid) {
-        id = firebase.auth().currentUser.uid;
-    }
+// this function will fetch a user's profile
+export const fetchProfile = () => {
+    const { currentUser } = firebase.auth();
     return dispatch => {
-        firebase.database().ref(`/profiles/${id}`)
+        firebase.database().ref(`/profiles/${currentUser.uid}`)
             .on('value', snapshot => {
                 dispatch({ type: PROFILE_FETCH_SUCCESS, payload: snapshot.val() });
             });
@@ -556,7 +556,6 @@ export const chooseAndUploadImage = image => {
 };
 
 export const fetchUsernames = () => {
-    console.log('running')
     return dispatch => {
         firebase.database().ref('usernames')
             .on('value', snapshot => {
@@ -565,16 +564,65 @@ export const fetchUsernames = () => {
     };
 };
 
-// export const friendsFetch = () => {
-//     const { currentUser } = firebase.auth();
+export const fetchFriends = () => {
+    const { currentUser } = firebase.auth();
+    return dispatch => {
+        firebase.database().ref(`/profiles/${currentUser.uid}/people`).orderByValue().equalTo('friends')
+            .on('value', snapshot => {
+                if (snapshot.val()) {
+                    for (const key in snapshot.val()) {
+                        firebase.database().ref(`/profiles/${key}`)
+                            .on('value', snap => {
+                                // console.log(snap.val())
+                                dispatch({ type: FETCH_FRIENDS_SUCCESS, payload: snap.val() });
+                            });
+                    }
+                }
+            });
+    };
+};
 
-//     return dispatch => {
-//         firebase.database().ref(`/users/${currentUser.uid}/employees`)
-//             .on('value', snapshot => {
-//                 dispatch({ type: EMPLOYEES_FETCH_SUCCESS, payload: snapshot.val() });
-//             });
-//     };
-// };
+export const fetchRequestsReceived = () => {
+    const { currentUser } = firebase.auth();
+    return dispatch => {
+        firebase.database().ref(`/profiles/${currentUser.uid}/people`).orderByValue().equalTo('reqReceived')
+            .on('value', snapshot => {
+                if (snapshot.val()) {
+                    for (const key in snapshot.val()) {
+                        firebase.database().ref(`/profiles/${key}`)
+                            .on('value', snap => {
+                                // console.log(snap.val())
+                                dispatch({ type: FETCH_FRIEND_REQS_SUCCESS, payload: snap.val() });
+                            });
+                    }
+                }
+            });
+    };
+};
+
+export const fetchRequestsSent = () => {
+    const { currentUser } = firebase.auth();
+    return dispatch => {
+        firebase.database().ref(`/profiles/${currentUser.uid}/people`).orderByValue().equalTo('reqSent')
+            .on('value', snapshot => {
+                if (snapshot.val()) {
+                    for (const key in snapshot.val()) {
+                        firebase.database().ref(`/profiles/${key}`)
+                            .on('value', snap => {
+                                // console.log(snap.val())
+                                dispatch({ type: FETCH_FRIEND_SENT_SUCCESS, payload: snap.val() });
+                            });
+                    }
+                }
+            });
+    };
+};
+
+export const emptyPeople = () => {
+    return {
+        type: EMPTY_PEOPLE
+    };
+};
 
 export const setRequestIcon = (userId) => {
     const { currentUser } = firebase.auth();

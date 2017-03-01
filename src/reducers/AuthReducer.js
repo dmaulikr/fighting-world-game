@@ -26,7 +26,11 @@ import {
     PHOTO_UPLOADING_START,
     PHOTO_UPLOADING_END,
     USERNAMES_FETCH_SUCCESS,
-    SET_REQ_ICON
+    SET_REQ_ICON,
+    FETCH_FRIENDS_SUCCESS,
+    EMPTY_PEOPLE,
+    FETCH_FRIEND_REQS_SUCCESS,
+    FETCH_FRIEND_SENT_SUCCESS
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -53,7 +57,10 @@ const INITIAL_STATE = {
   newEmailChangeEmail: '',
   passwordChangeEmail: '',
   usernames: null,
-  areFriends: ''
+  areFriends: '',
+  friends: [],
+  friendReqs: [],
+  friendSent: []
 };
 
 export default (state = INITIAL_STATE, action) => {
@@ -114,6 +121,14 @@ export default (state = INITIAL_STATE, action) => {
       return { ...state, usernames: action.payload };
     case SET_REQ_ICON:
       return { ...state, areFriends: action.payload };
+    case FETCH_FRIENDS_SUCCESS:
+      return { ...state, friends: [...state.friends, action.payload] };
+    case EMPTY_PEOPLE:
+      return { ...state, friends: [], friendReqs: [], friendSent: [] };
+    case FETCH_FRIEND_REQS_SUCCESS:
+      return { ...state, friendReqs: [...state.friendReqs, action.payload] };
+    case FETCH_FRIEND_SENT_SUCCESS:
+      return { ...state, friendSent: [...state.friendSent, action.payload] };
     default:
       return state;
   }

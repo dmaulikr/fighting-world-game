@@ -13,7 +13,7 @@ import {
 class User extends Component {
 
     componentDidMount() {
-        this.props.fetchProfile(this.props.user.uid);
+        this.props.fetchProfile();
     }
 
     signOutButtonPress() {

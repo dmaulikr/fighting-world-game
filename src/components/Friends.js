@@ -1,12 +1,16 @@
 import React from 'react';
 import { View } from 'react-native';
 
-import ListOfUsers from './ListOfUsers';
+import FriendList from './FriendList';
+import RequestSentList from './RequestSentList';
+import RequestReceivedList from './RequestReceivedList';
 
 export default () => {
     return (
         <View>
-            <ListOfUsers />
+            <FriendList />
+            <RequestReceivedList />
+            <RequestSentList />
         </View>
     );
 };

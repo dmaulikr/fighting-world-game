@@ -12,7 +12,11 @@ import ForgotPassword from './components/ForgotPassword';
 import ViewAUser from './components/ViewAUser';
 import Friends from './components/Friends';
 
-import { deleteWithoutReauthentication, viewUser } from './actions';
+import {
+    deleteWithoutReauthentication,
+    viewUser,
+    emptyPeople
+} from './actions';
 
 const RouterComponent = props => {
     return (
@@ -31,7 +35,7 @@ const RouterComponent = props => {
 
             <Scene key="main">
                 <Scene
-                    onRight={() => Actions.user()}
+                    onRight={() => props.viewUser()}
                     rightTitle="User"
                     key="dashboard"
                     component={Dashboard}
@@ -57,10 +61,16 @@ const RouterComponent = props => {
                 <Scene
                     key="friends"
                     component={Friends}
+                    onBack={() => onBackFriends(props)}
                 />
             </Scene>
         </Router>
     );
+};
+
+const onBackFriends = props => {
+    props.emptyPeople();
+    Actions.pop();
 };
 
 const getOwnUsername = () => {
@@ -73,4 +83,4 @@ const getOwnUsername = () => {
     return title;
 };
 
-export default connect(null, { deleteWithoutReauthentication, viewUser })(RouterComponent);
+export default connect(null, { deleteWithoutReauthentication, viewUser, emptyPeople })(RouterComponent);
