@@ -4,22 +4,19 @@ import { Text, Image, View, TouchableOpacity } from 'react-native';
 import { Card, CardSection, } from './common';
 
 import {
-    fetchProfile,
     sendFriendRequest,
-    setRequestIcon,
     approveFriendRequest,
     rejectFriend
 } from '../actions';
 
-class ViewAUser extends Component {
+class ViewPerson extends Component {
 
     componentDidMount() {
-        this.props.fetchProfile(this.props.userToFetch);
-        this.props.setRequestIcon(this.props.userToFetch);
+
     }
 
     renderPhoto() {
-        let { photoURL } = this.props.profile;
+        let { photoURL } = this.props.personToView;
         if (!photoURL) {
             photoURL = 'https://placeimg.com/300/300/animals';
         }
@@ -37,33 +34,33 @@ class ViewAUser extends Component {
 
     renderButtons() {
         const { textStyle, plusStyle, minusStyle, delReqStyle } = styles;
-        const { userToFetch, areFriends } = this.props;
+        const { personToView, relationship } = this.props;
         let icon = (
-            <TouchableOpacity onPress={() => this.props.rejectFriend(userToFetch)}>
-                <Text style={[textStyle, minusStyle]}>Delete Friend?</Text>
+            <TouchableOpacity onPress={() => this.props.sendFriendRequest(personToView)}>
+                <Text style={[textStyle, plusStyle]}>Add To Friends?</Text>
             </TouchableOpacity>
         );
-        if (areFriends === 'notFriends') {
+        if (relationship === 'friends') {
             icon = (
-                <TouchableOpacity onPress={() => this.props.sendFriendRequest(userToFetch)}>
-                    <Text style={[textStyle, plusStyle]}>Add To Friends?</Text>
+                <TouchableOpacity onPress={() => this.props.rejectFriend(personToView)}>
+                    <Text style={[textStyle, minusStyle]}>Delete Friend?</Text>
                 </TouchableOpacity>
             );
         }
-        if (areFriends === 'reqReceived') {
+        if (relationship === 'reqReceived') {
             icon = (
-                <TouchableOpacity onPress={() => this.props.rejectFriend(userToFetch)}>
+                <TouchableOpacity onPress={() => this.props.rejectFriend(personToView)}>
                     <Text style={[textStyle, delReqStyle]}>Delete Request?</Text>
                 </TouchableOpacity>
             );
         }
-        if (areFriends === 'reqSent') {
+        if (relationship === 'reqSent') {
             icon = (
                 <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity onPress={() => this.props.approveFriendRequest(userToFetch)}>
+                    <TouchableOpacity onPress={() => this.props.approveFriendRequest(personToView)}>
                         <Text style={[textStyle, plusStyle, { marginRight: 4 }]}>Approve</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => this.props.rejectFriend(userToFetch)}>
+                    <TouchableOpacity onPress={() => this.props.rejectFriend(personToView)}>
                         <Text style={[textStyle, minusStyle, { marginLeft: 4 }]}>Reject</Text>
                     </TouchableOpacity>
                 </View>
@@ -76,7 +73,7 @@ class ViewAUser extends Component {
                    {icon}
 
                     <TouchableOpacity onPress={() => console.log('messages')}>
-                        <Text style={[textStyle, { fontWeight: 'bold', color: '#191970' }]}>Messages</Text>
+                        <Text style={[textStyle, { fontWeight: 'bold', color: '#191970' }]}>Message</Text>
                     </TouchableOpacity>
                 </View>
             </CardSection>
@@ -84,7 +81,7 @@ class ViewAUser extends Component {
     }
 
     renderName() {
-        const { displayName } = this.props.profile.personal;
+        const { displayName } = this.props.personToView.personal;
         if (displayName) {
             return (
                 <CardSection>
@@ -99,7 +96,7 @@ class ViewAUser extends Component {
     }
 
     renderEmail() {
-        const { email } = this.props.profile.personal;
+        const { email } = this.props.personToView.personal;
         if (email) {
             return (
                 <CardSection>
@@ -114,7 +111,7 @@ class ViewAUser extends Component {
     }
 
     renderStats() {
-        const { disconnects, wins, losses, draws } = this.props.profile.stats;
+        const { disconnects, wins, losses, draws } = this.props.personToView.stats;
         return (
             <CardSection>
                 <View style={[styles.textContainerStyle, { flexDirection: 'row', justifyContent: 'space-around' }]}>
@@ -136,7 +133,8 @@ class ViewAUser extends Component {
     }
 
     render() {
-        if (this.props.profile && this.props.areFriends) {
+        if (this.props.personToView && this.props.relationship) {
+            console.log(this.props.relationship)
             return (
                 <Card>   
                     {this.renderPhoto()}
@@ -203,16 +201,21 @@ const styles = {
 };
 
 const mapStateToProps = state => {
-    const { profile, areFriends } = state.auth;
-    return { profile, areFriends };
+    const { personToView, user } = state.auth;
+    if (personToView) {
+        for (const x in personToView.people) {
+            if (x === user.uid) {
+                return { personToView, relationship: personToView.people[x] };
+            }
+        }
+    }
+    return { personToView, relationship: 'notFriends' };
 };
 
 const componentActions = {
-    fetchProfile,
     sendFriendRequest,
     approveFriendRequest,
-    setRequestIcon,
     rejectFriend
 };
 
-export default connect(mapStateToProps, componentActions)(ViewAUser);
+export default connect(mapStateToProps, componentActions)(ViewPerson);

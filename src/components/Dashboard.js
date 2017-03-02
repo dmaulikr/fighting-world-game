@@ -4,7 +4,6 @@ import { Text, View, TouchableOpacity } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 
 import {  } from '../actions';
-import ListOfUsers from './ListOfUsers';
 
 class Dashboaord extends Component {
     componentDidMount() {

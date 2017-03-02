@@ -33,7 +33,8 @@ import {
     FETCH_FRIENDS_SUCCESS,
     FETCH_FRIEND_REQS_SUCCESS,
     FETCH_FRIEND_SENT_SUCCESS,
-    EMPTY_PEOPLE
+    EMPTY_PEOPLE,
+    VIEW_A_PERSON
 } from './types';
 
 ////////////////////////////////////////////////////////////// TEXT FIELDS ///////////////////////
@@ -122,7 +123,7 @@ export const passwordTextChangedChangeEmail = text => {
 // if login fails due to not existing user, the function will try to register a new user
 // with the email and password provided
 export const loginOrRegisterUserWithEmail = ({ email, password }) => {
-  return (dispatch) => {
+  return dispatch => {
     dispatch({ type: LOGIN_USER_START });
 
     firebase.auth().signInWithEmailAndPassword(email, password)
@@ -152,7 +153,7 @@ export const loginOrRegisterUserWithEmail = ({ email, password }) => {
 // if the user logs in for the first time, the user will be taken to the create username screen
 // if user already created a username, user will be taken inside
 export const loginWithFacebook = () => {
-    return (dispatch) => {
+    return dispatch => {
         dispatch({ type: LOGIN_USER_START });
 
         const auth = firebase.auth();
@@ -433,6 +434,7 @@ const updateEmail = (dispatch, currentUser, newEm) => {
 
 // this function fires after user has been updated
 const updateUserSuccess = (dispatch, user) => {
+    console.log('updateUserSuccess fired')
 	dispatch({
 		type: UPDATE_USER_SUCCESS,
 		payload: user
@@ -442,15 +444,14 @@ const updateUserSuccess = (dispatch, user) => {
     Actions.user();
 };
 
-export const viewUser = (user = null) => {
+export const viewUser = () => {
+    console.log('viewUser fired')
     return () => {
-        if (!user) {
-            const { currentUser } = firebase.auth();
-            firebase.database().ref(`/profiles/${currentUser.uid}`)
-                .on('value', snapshot => {
-                    Actions.user({ title: snapshot.val().personal.username });
-                });
-        }
+        const { currentUser } = firebase.auth();
+        firebase.database().ref(`/profiles/${currentUser.uid}`)
+            .on('value', snapshot => {
+                Actions.user({ title: snapshot.val().personal.username });
+            });
     };
 };
 
@@ -665,15 +666,34 @@ export const approveFriendRequest = userId => {
 };
 
 // this function to be used to delete friends, reject friend requests or cancel friend requests
-export const rejectFriend = userId => {
+export const rejectFriend = user => {
     const { currentUser } = firebase.auth();
     return dispatch => {
-        firebase.database().ref(`profiles/${currentUser.uid}/people`).child(userId).remove()
-            .then(() => {
-                firebase.database().ref(`profiles/${userId}/people`).child(currentUser.uid).remove()
-                    .then(() => console.log('rejected req'))
-                    .catch(er => console.log(er));
-            })
-            .catch(error => console.log(error));
+        firebase.database().ref(`usernames/${user.personal.username}`).on('value', snapshot => {
+            const userId = snapshot.val();
+            firebase.database().ref(`profiles/${currentUser.uid}/people`).child(userId).remove()
+                .then(() => {
+                    firebase.database().ref(`profiles/${userId}/people`).child(currentUser.uid).remove()
+                        .then(() => {
+                            dispatch({ type: VIEW_A_PERSON, payload: user });
+                        })
+                        .catch(er => console.log(er));
+                })
+                .catch(error => console.log(error));
+        });
+    };
+};
+
+export const viewPerson = person => {
+    return dispatch => {
+        dispatch({ type: VIEW_A_PERSON, payload: person });
+        Actions.viewPerson({ title: person.personal.username });
+    };
+};
+
+export const unViewPerson = () => {
+    return {
+        type: VIEW_A_PERSON,
+        payload: null
     };
 };

@@ -5,7 +5,8 @@ import { Text, View, ListView, TouchableWithoutFeedback, Image } from 'react-nat
 import { CardSection, Card } from './common';
 
 import {
-    fetchFriends
+    fetchFriends,
+    viewPerson
 } from '../actions';
 
 class FriendList extends Component {
@@ -43,7 +44,7 @@ class FriendList extends Component {
     renderRow(person) {
         const { textStyle, textContainerStyle } = styles;
         return (
-            <TouchableWithoutFeedback onPress={() => console.log(person)}>
+            <TouchableWithoutFeedback onPress={() => this.props.viewPerson(person)}>
                 <View>
                     <CardSection>
                         {this.renderPhoto(person)}
@@ -112,7 +113,8 @@ const mapStateToProps = state => {
 };
 
 const componentActions = {
-    fetchFriends
+    fetchFriends,
+    viewPerson
 };
 
 export default connect(mapStateToProps, componentActions)(FriendList);

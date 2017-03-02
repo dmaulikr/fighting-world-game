@@ -9,13 +9,14 @@ import User from './components/User';
 import EditUser from './components/EditUser';
 import CreateUsername from './components/CreateUsername';
 import ForgotPassword from './components/ForgotPassword';
-import ViewAUser from './components/ViewAUser';
+import ViewPerson from './components/ViewPerson';
 import Friends from './components/Friends';
 
 import {
     deleteWithoutReauthentication,
     viewUser,
-    emptyPeople
+    emptyPeople,
+    unViewPerson
 } from './actions';
 
 const RouterComponent = props => {
@@ -43,8 +44,9 @@ const RouterComponent = props => {
                     initial
                 />
                 <Scene
-                    key="viewUser"
-                    component={ViewAUser}
+                    key="viewPerson"
+                    component={ViewPerson}
+                    onBack={() => onBackPerson(props)}
                 />
                 <Scene
                     onRight={() => Actions.editUser()}
@@ -72,8 +74,13 @@ const onBackFriends = props => {
     props.emptyPeople();
     Actions.pop();
 };
+const onBackPerson = props => {
+    Actions.pop();
+    props.unViewPerson();
+};
 
 const getOwnUsername = () => {
+    console.log('getOwnUsername fired')
     let title = 'Profile';
     const { currentUser } = firebase.auth();
         firebase.database().ref(`/profiles/${currentUser.uid}`)
@@ -83,4 +90,4 @@ const getOwnUsername = () => {
     return title;
 };
 
-export default connect(null, { deleteWithoutReauthentication, viewUser, emptyPeople })(RouterComponent);
+export default connect(null, { deleteWithoutReauthentication, viewUser, emptyPeople, unViewPerson })(RouterComponent);

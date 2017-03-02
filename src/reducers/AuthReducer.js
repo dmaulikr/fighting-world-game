@@ -30,7 +30,8 @@ import {
     FETCH_FRIENDS_SUCCESS,
     EMPTY_PEOPLE,
     FETCH_FRIEND_REQS_SUCCESS,
-    FETCH_FRIEND_SENT_SUCCESS
+    FETCH_FRIEND_SENT_SUCCESS,
+    VIEW_A_PERSON
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -60,7 +61,8 @@ const INITIAL_STATE = {
   areFriends: '',
   friends: [],
   friendReqs: [],
-  friendSent: []
+  friendSent: [],
+  personToView: null
 };
 
 export default (state = INITIAL_STATE, action) => {
@@ -129,6 +131,8 @@ export default (state = INITIAL_STATE, action) => {
       return { ...state, friendReqs: [...state.friendReqs, action.payload] };
     case FETCH_FRIEND_SENT_SUCCESS:
       return { ...state, friendSent: [...state.friendSent, action.payload] };
+    case VIEW_A_PERSON:
+      return { ...state, personToView: action.payload };
     default:
       return state;
   }
