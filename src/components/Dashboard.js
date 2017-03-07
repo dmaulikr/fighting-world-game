@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Text, View, TouchableOpacity } from 'react-native';
-import { Actions } from 'react-native-router-flux';
-
-import {  } from '../actions';
+import { Text, View } from 'react-native';
 
 class Dashboaord extends Component {
     componentDidMount() {

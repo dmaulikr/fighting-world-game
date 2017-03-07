@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Text, View, ListView, TouchableWithoutFeedback, Image } from 'react-native';
+import _ from 'lodash';
 
 import { CardSection, Card } from './common';
 
 import {
-    fetchRequestsReceived
+    fetchRequestsReceived,
+    viewPerson
 } from '../actions';
 
 class RequestReceivedList extends Component {
-    componentDidMount() {
+    componentWillMount() {
         this.props.fetchRequestsReceived();
         this.createDataSource(this.props);
     }
@@ -28,12 +30,12 @@ class RequestReceivedList extends Component {
         this.dataSource = ds.cloneWithRows(friendReqs);
     }
 
-    renderPhoto(person) {
-        const photoURL = person.photoURL ? person.photoURL : 'https://placeimg.com/300/300/animals';
+    renderPhoto(friendReq) {
+        const uri = friendReq.photoURL || 'https://placeimg.com/300/300/animals';
         return (
             <View style={styles.imageContainerStyle}>
                 <Image
-                    source={{ uri: photoURL }}
+                    source={{ uri }}
                     style={styles.imageStyle}
                 />
             </View>
@@ -43,13 +45,13 @@ class RequestReceivedList extends Component {
     renderRow(person) {
         const { textStyle, textContainerStyle } = styles;
         return (
-            <TouchableWithoutFeedback onPress={() => console.log(person)}>
+            <TouchableWithoutFeedback onPress={() => this.props.viewPerson(person.personId)}>
                 <View>
                     <CardSection>
-                        {this.renderPhoto(person)}
+                        {this.renderPhoto(person.friendReq)}
                         <View style={textContainerStyle}>
                             <Text style={textStyle}>
-                                {person.personal.username}
+                                {person.friendReq.personal.username}
                             </Text>
                         </View>
                     </CardSection>
@@ -59,7 +61,6 @@ class RequestReceivedList extends Component {
     }
 
     render() {
-        const x = '';
         if (this.props.friendReqs.length > 0) {
             return (
                 <View>
@@ -76,7 +77,7 @@ class RequestReceivedList extends Component {
         }
         return (
             <View>
-                <Text style={styles.textStyle}>{x}</Text>
+                <Text style={styles.textStyle}>{''}</Text>
             </View>
         );
     }
@@ -109,11 +110,13 @@ const styles = {
 };
 
 const mapStateToProps = state => {
-    return { friendReqs: state.auth.friendReqs };
+    const friendReqs = _.map(state.auth.friendReqs, (friendReq, personId) => ({ personId, friendReq }));
+    return { friendReqs };
 };
 
 const componentActions = {
-    fetchRequestsReceived
+    fetchRequestsReceived,
+    viewPerson
 };
 
 export default connect(mapStateToProps, componentActions)(RequestReceivedList);

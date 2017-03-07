@@ -11,20 +11,13 @@ import {
 
 class ViewPerson extends Component {
 
-    componentDidMount() {
-
-    }
-
     renderPhoto() {
-        let { photoURL } = this.props.personToView;
-        if (!photoURL) {
-            photoURL = 'https://placeimg.com/300/300/animals';
-        }
+        const uri = this.props.personToView.person.photoURL || 'https://placeimg.com/300/300/animals';
         return (
             <CardSection>
                 <View style={styles.imageContainerStyle}>
                     <Image
-                        source={{ uri: photoURL }}
+                        source={{ uri }}
                         style={styles.imageStyle}
                     />
                 </View>
@@ -34,8 +27,43 @@ class ViewPerson extends Component {
 
     renderButtons() {
         const { textStyle, plusStyle, minusStyle, delReqStyle } = styles;
-        const { personToView, relationship } = this.props;
-        let icon = (
+        const { personToView, user } = this.props;
+        const { uid } = user;
+        const { people } = personToView.person;
+        const relationship = people ? people[uid] : null;
+        console.log(personToView);
+        switch (relationship) {
+            case 'friends':
+                return (
+                    <TouchableOpacity onPress={() => this.props.rejectFriend(personToView.personId)}>
+                        <Text style={[textStyle, minusStyle]}>Delete Friend?</Text>
+                    </TouchableOpacity>
+                );
+            case 'reqReceived':
+                return (
+                    <TouchableOpacity onPress={() => this.props.rejectFriend(personToView.personId)}>
+                        <Text style={[textStyle, delReqStyle]}>Delete Request?</Text>
+                    </TouchableOpacity>
+                );
+            case 'reqSent':
+                return (
+                    <View style={{ flexDirection: 'row' }}>
+                        <TouchableOpacity onPress={() => this.props.approveFriendRequest(personToView.personId)}>
+                            <Text style={[textStyle, plusStyle, { marginRight: 4 }]}>Approve</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => this.props.rejectFriend(personToView.personId)}>
+                            <Text style={[textStyle, minusStyle, { marginLeft: 4 }]}>Reject</Text>
+                        </TouchableOpacity>
+                    </View>
+                );
+            default:
+                return (
+                    <TouchableOpacity onPress={() => this.props.sendFriendRequest(personToView.personId)}>
+                        <Text style={[textStyle, plusStyle]}>Add To Friends?</Text>
+                    </TouchableOpacity>
+                );
+        }
+        /*let icon = (
             <TouchableOpacity onPress={() => this.props.sendFriendRequest(personToView)}>
                 <Text style={[textStyle, plusStyle]}>Add To Friends?</Text>
             </TouchableOpacity>
@@ -77,11 +105,11 @@ class ViewPerson extends Component {
                     </TouchableOpacity>
                 </View>
             </CardSection>
-        );
+        );*/
     }
 
     renderName() {
-        const { displayName } = this.props.personToView.personal;
+        const { displayName } = this.props.personToView.person.personal;
         if (displayName) {
             return (
                 <CardSection>
@@ -96,7 +124,7 @@ class ViewPerson extends Component {
     }
 
     renderEmail() {
-        const { email } = this.props.personToView.personal;
+        const { email } = this.props.personToView.person.personal;
         if (email) {
             return (
                 <CardSection>
@@ -111,7 +139,7 @@ class ViewPerson extends Component {
     }
 
     renderStats() {
-        const { disconnects, wins, losses, draws } = this.props.personToView.stats;
+        const { disconnects, wins, losses, draws } = this.props.personToView.person.stats;
         return (
             <CardSection>
                 <View style={[styles.textContainerStyle, { flexDirection: 'row', justifyContent: 'space-around' }]}>
@@ -133,8 +161,7 @@ class ViewPerson extends Component {
     }
 
     render() {
-        if (this.props.personToView && this.props.relationship) {
-            console.log(this.props.relationship)
+        if (this.props.personToView) {
             return (
                 <Card>   
                     {this.renderPhoto()}
@@ -202,14 +229,7 @@ const styles = {
 
 const mapStateToProps = state => {
     const { personToView, user } = state.auth;
-    if (personToView) {
-        for (const x in personToView.people) {
-            if (x === user.uid) {
-                return { personToView, relationship: personToView.people[x] };
-            }
-        }
-    }
-    return { personToView, relationship: 'notFriends' };
+    return { personToView, user };
 };
 
 const componentActions = {

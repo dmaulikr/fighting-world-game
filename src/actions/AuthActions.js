@@ -28,7 +28,6 @@ import {
     PASSWORD_TEXT_CHANGED_CHANGE_EMAIL,
     PHOTO_UPLOADING_START,
     PHOTO_UPLOADING_END,
-    USERNAMES_FETCH_SUCCESS,
     SET_REQ_ICON,
     FETCH_FRIENDS_SUCCESS,
     FETCH_FRIEND_REQS_SUCCESS,
@@ -434,7 +433,7 @@ const updateEmail = (dispatch, currentUser, newEm) => {
 
 // this function fires after user has been updated
 const updateUserSuccess = (dispatch, user) => {
-    console.log('updateUserSuccess fired')
+    console.log('updateUserSuccess fired');
 	dispatch({
 		type: UPDATE_USER_SUCCESS,
 		payload: user
@@ -445,7 +444,7 @@ const updateUserSuccess = (dispatch, user) => {
 };
 
 export const viewUser = () => {
-    console.log('viewUser fired')
+    console.log('viewUser fired');
     return () => {
         const { currentUser } = firebase.auth();
         firebase.database().ref(`/profiles/${currentUser.uid}`)
@@ -556,30 +555,19 @@ export const chooseAndUploadImage = image => {
     };
 };
 
-export const fetchUsernames = () => {
-    return dispatch => {
-        firebase.database().ref('usernames')
-            .on('value', snapshot => {
-                dispatch({ type: USERNAMES_FETCH_SUCCESS, payload: snapshot.val() });
-            });
-    };
-};
-
 export const fetchFriends = () => {
     const { currentUser } = firebase.auth();
     return dispatch => {
         firebase.database().ref(`/profiles/${currentUser.uid}/people`).orderByValue().equalTo('friends')
-            .on('value', snapshot => {
-                if (snapshot.val()) {
-                    for (const key in snapshot.val()) {
-                        firebase.database().ref(`/profiles/${key}`)
-                            .on('value', snap => {
-                                // console.log(snap.val())
-                                dispatch({ type: FETCH_FRIENDS_SUCCESS, payload: snap.val() });
+            .once('value')
+                .then(snapshot => {
+                    snapshot.forEach(({ key }) => {
+                        firebase.database().ref(`/profiles/${key}`).once('value')
+                            .then(snap => {
+                                dispatch({ type: FETCH_FRIENDS_SUCCESS, payload: { key, friend: snap.val() } });
                             });
-                    }
-                }
-            });
+                    });
+                });
     };
 };
 
@@ -587,17 +575,15 @@ export const fetchRequestsReceived = () => {
     const { currentUser } = firebase.auth();
     return dispatch => {
         firebase.database().ref(`/profiles/${currentUser.uid}/people`).orderByValue().equalTo('reqReceived')
-            .on('value', snapshot => {
-                if (snapshot.val()) {
-                    for (const key in snapshot.val()) {
-                        firebase.database().ref(`/profiles/${key}`)
-                            .on('value', snap => {
-                                // console.log(snap.val())
-                                dispatch({ type: FETCH_FRIEND_REQS_SUCCESS, payload: snap.val() });
+            .once('value')
+                .then(snapshot => {
+                    snapshot.forEach(({ key }) => {
+                        firebase.database().ref(`/profiles/${key}`).once('value')
+                            .then(snap => {
+                                dispatch({ type: FETCH_FRIEND_REQS_SUCCESS, payload: { key, friendReq: snap.val() } });
                             });
-                    }
-                }
-            });
+                    });
+                });
     };
 };
 
@@ -605,17 +591,15 @@ export const fetchRequestsSent = () => {
     const { currentUser } = firebase.auth();
     return dispatch => {
         firebase.database().ref(`/profiles/${currentUser.uid}/people`).orderByValue().equalTo('reqSent')
-            .on('value', snapshot => {
-                if (snapshot.val()) {
-                    for (const key in snapshot.val()) {
-                        firebase.database().ref(`/profiles/${key}`)
-                            .on('value', snap => {
-                                // console.log(snap.val())
-                                dispatch({ type: FETCH_FRIEND_SENT_SUCCESS, payload: snap.val() });
+            .once('value')
+                .then(snapshot => {
+                    snapshot.forEach(({ key }) => {
+                        firebase.database().ref(`/profiles/${key}`).once('value')
+                            .then(snap => {
+                                dispatch({ type: FETCH_FRIEND_SENT_SUCCESS, payload: { key, friendSent: snap.val() } });
                             });
-                    }
-                }
-            });
+                    });
+                });
     };
 };
 
@@ -625,23 +609,23 @@ export const emptyPeople = () => {
     };
 };
 
-export const setRequestIcon = (userId) => {
-    const { currentUser } = firebase.auth();
-    return dispatch => {
-        firebase.database().ref(`profiles/${userId}/people/${currentUser.uid}`).once('value')
-            .then(snapshot => {
-                if (snapshot.exists()) {
-                    dispatch({ type: SET_REQ_ICON, payload: snapshot.val() });
-                } else {
-                    dispatch({ type: SET_REQ_ICON, payload: 'notFriends' });
-                }
-            });
-    };
-};
+// export const setRequestIcon = (userId) => {
+//     const { currentUser } = firebase.auth();
+//     return dispatch => {
+//         firebase.database().ref(`profiles/${userId}/people/${currentUser.uid}`).once('value')
+//             .then(snapshot => {
+//                 if (snapshot.exists()) {
+//                     dispatch({ type: SET_REQ_ICON, payload: snapshot.val() });
+//                 } else {
+//                     dispatch({ type: SET_REQ_ICON, payload: 'notFriends' });
+//                 }
+//             });
+//     };
+// };
 
-export const sendFriendRequest = (userId) => {
+export const sendFriendRequest = userId => {
     const { currentUser } = firebase.auth();
-    return dispatch => {
+    return () => {
         firebase.database().ref(`profiles/${userId}/people/${currentUser.uid}`).set('reqReceived')
             .then(() => {
                 firebase.database().ref(`profiles/${currentUser.uid}/people/${userId}`).set('reqSent')
@@ -654,11 +638,11 @@ export const sendFriendRequest = (userId) => {
 
 export const approveFriendRequest = userId => {
     const { currentUser } = firebase.auth();
-    return dispatch => {
+    return () => {
         firebase.database().ref(`profiles/${userId}/people/${currentUser.uid}`).set('friends')
             .then(() => {
                 firebase.database().ref(`profiles/${currentUser.uid}/people/${userId}`).set('friends')
-                    .then(() => console.log('now friends'))
+                    .then(() => Actions.dashboard({ type: 'reset' }))
                     .catch(er => console.log(er));
             })
             .catch(error => console.log(error));
@@ -666,28 +650,33 @@ export const approveFriendRequest = userId => {
 };
 
 // this function to be used to delete friends, reject friend requests or cancel friend requests
-export const rejectFriend = user => {
+export const rejectFriend = userId => {
     const { currentUser } = firebase.auth();
-    return dispatch => {
-        firebase.database().ref(`usernames/${user.personal.username}`).on('value', snapshot => {
-            const userId = snapshot.val();
-            firebase.database().ref(`profiles/${currentUser.uid}/people`).child(userId).remove()
-                .then(() => {
-                    firebase.database().ref(`profiles/${userId}/people`).child(currentUser.uid).remove()
-                        .then(() => {
-                            dispatch({ type: VIEW_A_PERSON, payload: user });
-                        })
-                        .catch(er => console.log(er));
-                })
-                .catch(error => console.log(error));
-        });
+    return () => {
+        firebase.database().ref(`profiles/${currentUser.uid}/people`).child(userId).remove()
+            .then(() => {
+                firebase.database().ref(`profiles/${userId}/people`).child(currentUser.uid).remove()
+                    .then(() => {
+                        Actions.dashboard({ type: 'reset' });
+                    })
+                    .catch(er => console.log(er));
+            })
+            .catch(error => console.log(error));
     };
 };
 
-export const viewPerson = person => {
+export const viewPerson = personId => {
     return dispatch => {
-        dispatch({ type: VIEW_A_PERSON, payload: person });
-        Actions.viewPerson({ title: person.personal.username });
+        firebase.database().ref(`profiles/${personId}`).on('value', snapshot => {
+            dispatch({
+                type: VIEW_A_PERSON,
+                payload: {
+                    personId,
+                    person: snapshot.val()
+                }
+            });
+            Actions.viewPerson({ title: snapshot.val().personal.username });
+        });
     };
 };
 

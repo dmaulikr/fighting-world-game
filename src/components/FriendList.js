@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import _ from 'lodash';
 import { Text, View, ListView, TouchableWithoutFeedback, Image } from 'react-native';
 
 import { CardSection, Card } from './common';
@@ -10,7 +11,7 @@ import {
 } from '../actions';
 
 class FriendList extends Component {
-    componentDidMount() {
+    componentWillMount() {
         this.props.fetchFriends();
         this.createDataSource(this.props);
     }
@@ -29,12 +30,12 @@ class FriendList extends Component {
         this.dataSource = ds.cloneWithRows(friends);
     }
 
-    renderPhoto(person) {
-        const photoURL = person.photoURL ? person.photoURL : 'https://placeimg.com/300/300/animals';
+    renderPhoto(photoURL) {
+        const uri = photoURL || 'https://placeimg.com/300/300/animals';
         return (
             <View style={styles.imageContainerStyle}>
                 <Image
-                    source={{ uri: photoURL }}
+                    source={{ uri }}
                     style={styles.imageStyle}
                 />
             </View>
@@ -42,15 +43,16 @@ class FriendList extends Component {
     }
 
     renderRow(person) {
+        const { friend, friendId } = person;
         const { textStyle, textContainerStyle } = styles;
         return (
-            <TouchableWithoutFeedback onPress={() => this.props.viewPerson(person)}>
+            <TouchableWithoutFeedback onPress={() => this.props.viewPerson(friendId)}>
                 <View>
                     <CardSection>
-                        {this.renderPhoto(person)}
+                        {this.renderPhoto(friend.photoURL)}
                         <View style={textContainerStyle}>
                             <Text style={textStyle}>
-                                {person.personal.username}
+                                {friend.personal.username}
                             </Text>
                         </View>
                     </CardSection>
@@ -76,7 +78,7 @@ class FriendList extends Component {
         }
         return (
             <View>
-                <Text style={styles.textStyle}>None</Text>
+                <Text style={styles.textStyle}>{''}</Text>
             </View>
         );
     }
@@ -109,7 +111,8 @@ const styles = {
 };
 
 const mapStateToProps = state => {
-    return { friends: state.auth.friends };
+    const friends = _.map(state.auth.friends, (friend, friendId) => ({ friendId, friend }));
+    return { friends };
 };
 
 const componentActions = {

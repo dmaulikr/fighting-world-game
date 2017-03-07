@@ -59,9 +59,9 @@ const INITIAL_STATE = {
   passwordChangeEmail: '',
   usernames: null,
   areFriends: '',
-  friends: [],
-  friendReqs: [],
-  friendSent: [],
+  friends: {},
+  friendReqs: {},
+  friendSent: {},
   personToView: null
 };
 
@@ -124,13 +124,13 @@ export default (state = INITIAL_STATE, action) => {
     case SET_REQ_ICON:
       return { ...state, areFriends: action.payload };
     case FETCH_FRIENDS_SUCCESS:
-      return { ...state, friends: [...state.friends, action.payload] };
+      return { ...state, friends: { ...state.friends, [action.payload.key]: action.payload.friend } };
     case EMPTY_PEOPLE:
-      return { ...state, friends: [], friendReqs: [], friendSent: [] };
+      return { ...state, friends: {}, friendReqs: {}, friendSent: {} };
     case FETCH_FRIEND_REQS_SUCCESS:
-      return { ...state, friendReqs: [...state.friendReqs, action.payload] };
+      return { ...state, friendReqs: { ...state.friendReqs, [action.payload.key]: action.payload.friendReq } };
     case FETCH_FRIEND_SENT_SUCCESS:
-      return { ...state, friendSent: [...state.friendSent, action.payload] };
+      return { ...state, friendSent: { ...state.friendSent, [action.payload.key]: action.payload.friendSent } };
     case VIEW_A_PERSON:
       return { ...state, personToView: action.payload };
     default:

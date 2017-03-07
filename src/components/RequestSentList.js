@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import _ from 'lodash';
 import { Text, View, ListView, TouchableWithoutFeedback, Image } from 'react-native';
 
 import { CardSection, Card } from './common';
 
 import {
-    fetchRequestsSent
+    fetchRequestsSent,
+    viewPerson
 } from '../actions';
 
 class RequestSentList extends Component {
-    componentDidMount() {
+    componentWillMount() {
         this.props.fetchRequestsSent();
         this.createDataSource(this.props);
     }
@@ -20,20 +22,20 @@ class RequestSentList extends Component {
         this.createDataSource(nextProps);
     }
 
-    createDataSource({ friendSent }) {
+    createDataSource({ friendsSent }) {
         const ds = new ListView.DataSource({
             rowHasChanged: (r1, r2) => r1 !== r2
         });
 
-        this.dataSource = ds.cloneWithRows(friendSent);
+        this.dataSource = ds.cloneWithRows(friendsSent);
     }
 
-    renderPhoto(person) {
-        const photoURL = person.photoURL ? person.photoURL : 'https://placeimg.com/300/300/animals';
+    renderPhoto(personSent) {
+        const uri = personSent.photoURL || 'https://placeimg.com/300/300/animals';
         return (
             <View style={styles.imageContainerStyle}>
                 <Image
-                    source={{ uri: photoURL }}
+                    source={{ uri }}
                     style={styles.imageStyle}
                 />
             </View>
@@ -43,13 +45,13 @@ class RequestSentList extends Component {
     renderRow(person) {
         const { textStyle, textContainerStyle } = styles;
         return (
-            <TouchableWithoutFeedback onPress={() => console.log(person)}>
+            <TouchableWithoutFeedback onPress={() => this.props.viewPerson(person.personId)}>
                 <View>
                     <CardSection>
-                        {this.renderPhoto(person)}
+                        {this.renderPhoto(person.personSent)}
                         <View style={textContainerStyle}>
                             <Text style={textStyle}>
-                                {person.personal.username}
+                                {person.personSent.personal.username}
                             </Text>
                         </View>
                     </CardSection>
@@ -59,8 +61,8 @@ class RequestSentList extends Component {
     }
 
     render() {
-        const x = '';
-        if (this.props.friendSent.length > 0) {
+        console.log(this.props.friendsSent)
+        if (this.props.friendsSent.length > 0) {
             return (
                 <View>
                     <Text style={styles.headerStyle}>Requests Sent</Text>
@@ -76,7 +78,7 @@ class RequestSentList extends Component {
         }
         return (
             <View>
-                <Text style={styles.textStyle}>{x}</Text>
+                <Text style={styles.textStyle}>{''}</Text>
             </View>
         );
     }
@@ -109,11 +111,13 @@ const styles = {
 };
 
 const mapStateToProps = state => {
-    return { friendSent: state.auth.friendSent };
+    const friendsSent = _.map(state.auth.friendSent, (personSent, personId) => ({ personId, personSent }));
+    return { friendsSent };
 };
 
 const componentActions = {
-    fetchRequestsSent
+    fetchRequestsSent,
+    viewPerson
 };
 
 export default connect(mapStateToProps, componentActions)(RequestSentList);

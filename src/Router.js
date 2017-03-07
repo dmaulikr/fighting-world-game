@@ -71,7 +71,7 @@ const RouterComponent = props => {
 };
 
 const onBackFriends = props => {
-    props.emptyPeople();
+    //props.emptyPeople();
     Actions.pop();
 };
 const onBackPerson = props => {
