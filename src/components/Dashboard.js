@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Text, View } from 'react-native';
 
+import {  } from '../actions';
+
 class Dashboaord extends Component {
     componentDidMount() {
 
@@ -22,7 +24,7 @@ const mapStateToProps = state => {
 };
 
 const componentActions = {
-
+    
 };
 
 export default connect(mapStateToProps, componentActions)(Dashboaord);

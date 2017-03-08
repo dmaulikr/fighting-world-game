@@ -163,7 +163,14 @@ class ViewPerson extends Component {
     render() {
         if (this.props.personToView) {
             return (
-                <Card>   
+                <Card>
+                    <CardSection>
+                        <View style={styles.textContainerStyle}>
+                            <Text style={styles.textStyle}>
+                                {this.props.personToView.person.personal.username}
+                            </Text>
+                        </View>
+                    </CardSection>
                     {this.renderPhoto()}
 
                     {this.renderButtons()}

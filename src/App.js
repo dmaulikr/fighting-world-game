@@ -8,7 +8,7 @@ import Router from './Router';
 import reducers from './reducers';
 
 class App extends Component {
-    componentDidMount() {
+    componentWillMount() {
         const config = {
             apiKey: 'AIzaSyBAy4TMNiKorvPuFYgDGZZFA-BYeBHrhKM',
             authDomain: 'fightingworld-48192.firebaseapp.com',

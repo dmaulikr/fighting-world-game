@@ -14,7 +14,7 @@ class Friends extends Component {
     componentWillMount() {
         this.props.emptyPeople();
     }
-    
+
     render() {
         return (
             <View>

@@ -61,7 +61,6 @@ class RequestSentList extends Component {
     }
 
     render() {
-        console.log(this.props.friendsSent)
         if (this.props.friendsSent.length > 0) {
             return (
                 <View>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Scene, Router, Actions } from 'react-native-router-flux';
-import { connect } from 'react-redux';
 import firebase from 'firebase';
 
 import LoginForm from './components/LoginForm';
@@ -12,14 +11,7 @@ import ForgotPassword from './components/ForgotPassword';
 import ViewPerson from './components/ViewPerson';
 import Friends from './components/Friends';
 
-import {
-    deleteWithoutReauthentication,
-    viewUser,
-    emptyPeople,
-    unViewPerson
-} from './actions';
-
-const RouterComponent = props => {
+const RouterComponent = () => {
     return (
         <Router sceneStyle={{ paddingTop: 65 }}>
             <Scene key="auth">
@@ -28,15 +20,13 @@ const RouterComponent = props => {
                     key="createUsername"
                     component={CreateUsername}
                     title="Create Username"
-                    leftTitle="Back"
-                    onLeft={() => props.deleteWithoutReauthentication()}
                 />
                 <Scene key="forgotPassword" component={ForgotPassword} title="Password Reset" />
             </Scene>
 
             <Scene key="main">
                 <Scene
-                    onRight={() => props.viewUser()}
+                    onRight={() => Actions.user()}
                     rightTitle="User"
                     key="dashboard"
                     component={Dashboard}
@@ -46,14 +36,14 @@ const RouterComponent = props => {
                 <Scene
                     key="viewPerson"
                     component={ViewPerson}
-                    onBack={() => onBackPerson(props)}
+                    onBack={() => backToFriends()}
                 />
                 <Scene
                     onRight={() => Actions.editUser()}
                     rightTitle="Edit"
                     key="user"
                     component={User}
-                    title={() => getOwnUsername()}
+                    title={getOwnUsername}
                 />
                 <Scene
                     key="editUser"
@@ -63,31 +53,25 @@ const RouterComponent = props => {
                 <Scene
                     key="friends"
                     component={Friends}
-                    onBack={() => onBackFriends(props)}
+                    leftTitle="Home"
+                    onLeft={() => Actions.dashboard({ type: 'reset' })}
                 />
             </Scene>
         </Router>
     );
 };
 
-const onBackFriends = props => {
-    //props.emptyPeople();
-    Actions.pop();
-};
-const onBackPerson = props => {
-    Actions.pop();
-    props.unViewPerson();
+const backToFriends = () => {
+    Actions.friends({ type: 'reset' });
 };
 
 const getOwnUsername = () => {
-    console.log('getOwnUsername fired')
-    let title = 'Profile';
     const { currentUser } = firebase.auth();
-        firebase.database().ref(`/profiles/${currentUser.uid}`)
-            .on('value', snapshot => {
-                title = snapshot.val().personal.username;
-            });
-    return title;
+    firebase.database().ref(`/profiles/${currentUser.uid}`)
+        .on('value', snapshot => {
+            const { username } = snapshot.val().personal;
+            Actions.refresh({ title: username });
+        });
 };
 
-export default connect(null, { deleteWithoutReauthentication, viewUser, emptyPeople, unViewPerson })(RouterComponent);
+export default RouterComponent;

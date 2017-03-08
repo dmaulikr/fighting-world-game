@@ -6,7 +6,8 @@ import { Card, CardSection, Button, Spinner, Input } from './common';
 
 import {
     newUsernameTextChanged,
-    createUsernameAndProfileAndLogIn
+    createUsernameAndProfileAndLogIn,
+    deleteWithoutReauthentication
 } from '../actions';
 
 class CreateUsername extends Component {
@@ -20,6 +21,10 @@ class CreateUsername extends Component {
         }
     }
 
+    onBackPress() {
+        this.props.deleteWithoutReauthentication();
+    }
+
     renderModalHelperText() {
         const { usernameTestResult } = this.props;
         const { availableTextStyle, notAvailableTextStyle } = styles;
@@ -28,6 +33,23 @@ class CreateUsername extends Component {
         }
         const s = usernameTestResult === 'Available' ? availableTextStyle : notAvailableTextStyle;
         return <Text style={s}>{usernameTestResult}</Text>;
+    }
+
+    renderBackButton() {
+        const { backButtonStyle, backButtonTextStyle } = styles;
+        const backBtnStyles = {
+            additionalButtonStyle: backButtonStyle,
+            additionalTextStyle: backButtonTextStyle
+        };
+
+        return (
+            <Button
+                onPress={this.onBackPress.bind(this)}
+                additionalStyles={backBtnStyles}
+            >
+                {'< Back'}
+            </Button>
+        );
     }
 
     render() {
@@ -55,8 +77,11 @@ class CreateUsername extends Component {
 
                 <CardSection>
                     <Button onPress={this.onUsernameCreate.bind(this)}>
-                        Create
+                        {'Create >'}
                     </Button>
+                </CardSection>
+                <CardSection>
+                    {this.renderBackButton()}
                 </CardSection>
             </Card>
         );
@@ -81,6 +106,12 @@ const styles = {
     },
     notAvailableTextStyle: {
         color: 'red'
+    },
+    backButtonStyle: {
+        borderColor: 'black'
+    },
+    backButtonTextStyle: {
+        color: 'black'
     }
 };
 
@@ -91,7 +122,8 @@ const mapStateToProps = state => {
 
 const componentActions = {
     newUsernameTextChanged,
-    createUsernameAndProfileAndLogIn
+    createUsernameAndProfileAndLogIn,
+    deleteWithoutReauthentication
 };
 
 export default connect(mapStateToProps, componentActions)(CreateUsername);
