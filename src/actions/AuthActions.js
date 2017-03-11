@@ -28,12 +28,15 @@ import {
     PASSWORD_TEXT_CHANGED_CHANGE_EMAIL,
     PHOTO_UPLOADING_START,
     PHOTO_UPLOADING_END,
-    SET_REQ_ICON,
+    FRIEND_SEARCH_TEXT_CHANGED,
     FETCH_FRIENDS_SUCCESS,
     FETCH_FRIEND_REQS_SUCCESS,
     FETCH_FRIEND_SENT_SUCCESS,
     EMPTY_PEOPLE,
-    VIEW_A_PERSON
+    VIEW_A_PERSON,
+    PLAYER_SEARCH_TEXT_CHANGED,
+    FETCH_PLAYERS_SUCCESS,
+    NOTIFICATIONS_MODAL
 } from './types';
 
 ////////////////////////////////////////////////////////////// TEXT FIELDS ///////////////////////
@@ -453,16 +456,16 @@ const updateUserSuccess = (dispatch, user) => {
     Actions.user();
 };
 
-export const viewUser = () => {
-    console.log('viewUser fired');
-    return () => {
-        const { currentUser } = firebase.auth();
-        firebase.database().ref(`/profiles/${currentUser.uid}`)
-            .on('value', snapshot => {
-                Actions.user();
-            });
-    };
-};
+// export const viewUser = () => {
+//     console.log('viewUser fired');
+//     return () => {
+//         const { currentUser } = firebase.auth();
+//         firebase.database().ref(`/profiles/${currentUser.uid}`)
+//             .on('value', snapshot => {
+//                 Actions.user();
+//             });
+//     };
+// };
 
 /////////////////////////////////////////////////// PROFILE //////////////////////////////////////
 
@@ -566,7 +569,6 @@ export const chooseAndUploadImage = image => {
 };
 
 export const fetchFriends = () => {
-    console.log('fetchFriendsFired')
     const { currentUser } = firebase.auth();
     return dispatch => {
         firebase.database().ref(`/profiles/${currentUser.uid}/people`).orderByValue().equalTo('friends')
@@ -577,6 +579,16 @@ export const fetchFriends = () => {
                             dispatch({ type: FETCH_FRIENDS_SUCCESS, payload: { key, friend: snap.val() } });
                         });
                 });
+            });
+    };
+};
+
+export const fetchPlayers = (searchText = null) => {
+    return dispatch => {
+        firebase.database().ref('profiles')
+            .on('value', snapshot => {
+                console.log(snapshot.val())
+                 dispatch({ type: FETCH_PLAYERS_SUCCESS, payload: snapshot.val() });
             });
     };
 };
@@ -693,4 +705,16 @@ export const unViewPerson = () => {
         type: VIEW_A_PERSON,
         payload: null
     };
+};
+
+export const onPlayerSearchTextChange = text => {
+    return { type: PLAYER_SEARCH_TEXT_CHANGED, payload: text };
+};
+
+export const onFriendSearchTextChange = text => {
+    return { type: FRIEND_SEARCH_TEXT_CHANGED, payload: text };
+};
+
+export const toggleNotificationsModal = bool => {
+    return { type: NOTIFICATIONS_MODAL, payload: bool };
 };

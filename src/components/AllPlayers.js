@@ -1,30 +1,23 @@
 import React, { Component } from 'react';
-import { View, TouchableOpacity, Text, ScrollView, Image } from 'react-native';
 import { connect } from 'react-redux';
 import { Actions } from 'react-native-router-flux';
+import { View, TouchableOpacity, Text, ScrollView, Image } from 'react-native';
 
-import FriendList from './FriendList';
-import RequestSentList from './RequestSentList';
-import RequestReceivedList from './RequestReceivedList';
+import { onPlayerSearchTextChange } from '../actions';
+
+import { Card } from './common';
+
+import AllPlayersList from './AllPlayersList';
 import NavBarWithSearch from './NavBarWithSearch';
 import NavBox from './NavBox';
-
-import {
-    emptyPeople,
-    onFriendSearchTextChange
-} from '../actions';
 
 const back = require('../images/back.png');
 const friends = require('../images/friends.png');
 const request = require('../images/request.png');
 
-class Friends extends Component {
-    componentWillMount() {
-        this.props.emptyPeople();
-    }
-
+class AllPlayers extends Component {
     searchTextChanged(text) {
-        this.props.onFriendSearchTextChange(text);
+        this.props.onPlayerSearchTextChange(text);
     }
 
     renderBottomNav() {
@@ -52,14 +45,14 @@ class Friends extends Component {
         return (
             <View style={{ flex: 1 }}>
                 <NavBarWithSearch
-                    value={this.props.searchFriendText}
+                    value={this.props.searchPlayerText}
                     onChangeText={this.searchTextChanged.bind(this)}
-                    placeholder='Search Friends'
+                    placeholder='Search Players'
                 />
                 <ScrollView>
-                    <FriendList />
-                    <RequestReceivedList />
-                    <RequestSentList />
+                    <Card>
+                        <AllPlayersList />
+                    </Card>
                 </ScrollView>
                 {this.renderBottomNav()}
             </View>
@@ -77,7 +70,7 @@ const styles = {
 };
 
 const mapStateToProps = state => {
-    return { searchFriendText: state.auth.searchFriendText };
+    return { searchPlayerText: state.auth.searchPlayerText };
 };
 
-export default connect(mapStateToProps, { emptyPeople, onFriendSearchTextChange })(Friends);
+export default connect(mapStateToProps, { onPlayerSearchTextChange })(AllPlayers);

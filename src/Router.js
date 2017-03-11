@@ -10,10 +10,12 @@ import CreateUsername from './components/CreateUsername';
 import ForgotPassword from './components/ForgotPassword';
 import ViewPerson from './components/ViewPerson';
 import Friends from './components/Friends';
+import AllPlayers from './components/AllPlayers';
+import Messages from './components/Messages';
 
 const RouterComponent = () => {
     return (
-        <Router sceneStyle={{ paddingTop: 65 }}>
+        <Router sceneStyle={{ paddingTop: 65 }} navigationBarStyle={styles.navStyle}>
             <Scene key="auth">
                 <Scene key="login" component={LoginForm} title="Please Login" initial />
                 <Scene
@@ -36,7 +38,13 @@ const RouterComponent = () => {
                 <Scene
                     key="viewPerson"
                     component={ViewPerson}
-                    onBack={() => backToFriends()}
+                    sceneStyle={{ paddingTop: 10 }}
+                    hideNavBar
+                />
+                <Scene
+                    key="messages"
+                    component={Messages}
+                    title={getOwnUsername}
                 />
                 <Scene
                     onRight={() => Actions.editUser()}
@@ -53,12 +61,30 @@ const RouterComponent = () => {
                 <Scene
                     key="friends"
                     component={Friends}
-                    leftTitle="Home"
-                    onLeft={() => Actions.dashboard({ type: 'reset' })}
+                    hideNavBar
+                    sceneStyle={{ paddingTop: 14 }}
+                />
+                <Scene
+                    key="allPlayers"
+                    component={AllPlayers}
+                    hideNavBar
+                    sceneStyle={{ paddingTop: 14 }}
                 />
             </Scene>
         </Router>
     );
+};
+
+const styles = {
+    navStyle: {
+        borderBottomWidth: 0,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 1,
+    }
 };
 
 const backToFriends = () => {

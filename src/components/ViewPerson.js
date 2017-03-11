@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Text, Image, View, TouchableOpacity } from 'react-native';
+import { Actions } from 'react-native-router-flux';
 import { Card, CardSection, } from './common';
 
 import {
@@ -171,6 +172,9 @@ class ViewPerson extends Component {
                             </Text>
                         </View>
                     </CardSection>
+                    <TouchableOpacity style={styles.backBtnStyle} onPress={() => Actions.pop()}>
+                        <Text>Back</Text>
+                    </TouchableOpacity>
                     {this.renderPhoto()}
 
                     {this.renderButtons()}
@@ -231,6 +235,11 @@ const styles = {
     },
     signOutButtonTextStyle: {
         color: '#FF0000'
+    },
+    backBtnStyle: {
+        position: 'absolute',
+        paddingLeft: 5,
+        marginTop: 12
     }
 };
 

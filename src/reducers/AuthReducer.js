@@ -31,7 +31,11 @@ import {
     EMPTY_PEOPLE,
     FETCH_FRIEND_REQS_SUCCESS,
     FETCH_FRIEND_SENT_SUCCESS,
-    VIEW_A_PERSON
+    VIEW_A_PERSON,
+    PLAYER_SEARCH_TEXT_CHANGED,
+    FETCH_PLAYERS_SUCCESS,
+    FRIEND_SEARCH_TEXT_CHANGED,
+    NOTIFICATIONS_MODAL
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -62,7 +66,11 @@ const INITIAL_STATE = {
   friends: {},
   friendReqs: {},
   friendSent: {},
-  personToView: null
+  personToView: null,
+  allPlayers: null,
+  searchPlayerText: '',
+  searchFriendText: '',
+  notificationsVisible: false
 };
 
 export default (state = INITIAL_STATE, action) => {
@@ -133,6 +141,14 @@ export default (state = INITIAL_STATE, action) => {
       return { ...state, friendSent: { ...state.friendSent, [action.payload.key]: action.payload.friendSent } };
     case VIEW_A_PERSON:
       return { ...state, personToView: action.payload };
+    case PLAYER_SEARCH_TEXT_CHANGED:
+      return { ...state, searchPlayerText: action.payload };
+    case FRIEND_SEARCH_TEXT_CHANGED:
+      return { ...state, searchFriendText: action.payload };
+    case FETCH_PLAYERS_SUCCESS:
+      return { ...state, allPlayers: action.payload };
+    case NOTIFICATIONS_MODAL:
+      return { ...state, notificationsVisible: action.payload };
     default:
       return state;
   }

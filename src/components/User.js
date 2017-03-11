@@ -10,6 +10,9 @@ import {
     fetchProfile
 } from '../actions';
 
+const friends = require('../images/friends.png');
+const messages = require('../images/messages.png');
+
 class User extends Component {
 
     componentDidMount() {
@@ -38,17 +41,19 @@ class User extends Component {
     }
 
     renderButtons() {
-        const { textStyle } = styles;
+        const { navBtnStyle } = styles;
         const { username } = this.props.profile.personal;
         return (
             <CardSection>
                 <View style={[styles.textContainerStyle, { flexDirection: 'row', justifyContent: 'space-around' }]}>
-                    <TouchableOpacity onPress={() => Actions.friends({ title: username })}>
-                        <Text style={[textStyle, { fontWeight: 'bold', color: '#191970' }]}>Friends</Text>
+                    <TouchableOpacity onPress={() => Actions.friends({ title: username })} style={navBtnStyle}>
+                        <Image source={friends} style={{ width: 40, height: 40 }} />
+                        <Text>Friends</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => console.log('messages')}>
-                        <Text style={[textStyle, { fontWeight: 'bold', color: '#191970' }]}>Messages</Text>
+                    <TouchableOpacity onPress={() => Actions.messages()} style={navBtnStyle}>
+                        <Image source={messages} style={{ width: 40, height: 40 }} />
+                        <Text>Messages</Text>
                     </TouchableOpacity>
                 </View>
             </CardSection>
@@ -181,6 +186,12 @@ const styles = {
     },
     signOutButtonTextStyle: {
         color: '#FF0000'
+    },
+    navBtnStyle: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingLeft: 3,
+        paddingRight: 3
     }
 };
 
