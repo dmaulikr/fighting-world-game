@@ -11,10 +11,10 @@ import NotificationsModal from './NotificationsModal';
 import { fetchProfile, toggleNotificationsModal } from '../actions';
 
 const notifications = require('../images/notifications.png');
-const menu = require('../images/menu.png');
-const battle = require('../images/battle.png');
+const players = require('../images/players.png');
+const back = require('../images/back.png');
 
-class Dashboaord extends Component {
+class PlayHome extends Component {
     componentDidMount() {
         this.props.fetchProfile();
     }
@@ -23,9 +23,9 @@ class Dashboaord extends Component {
         const { username } = this.props.profile.personal;
         return (
             <NavBox>
-                <TouchableOpacity onPress={() => Actions.play({ type: 'reset' })} style={styles.navBtnStyle}>
-                    <Image source={battle} style={{ width: 40, height: 40 }} />
-                    <Text>Play</Text>
+                <TouchableOpacity onPress={() => Actions.main({ type: 'reset' })} style={styles.navBtnStyle}>
+                    <Image source={back} style={{ width: 40, height: 40 }} />
+                    <Text>Back</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => this.props.toggleNotificationsModal(true)} style={styles.navBtnStyle}>
@@ -33,9 +33,9 @@ class Dashboaord extends Component {
                     <Text>Notifications</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => Actions.refresh({ key: 'drawer', open: value => !value })} style={styles.navBtnStyle}>
-                    <Image source={menu} style={{ width: 40, height: 40 }} />
-                    <Text>Menu</Text>
+                <TouchableOpacity onPress={() => Actions.allPlayers()} style={styles.navBtnStyle}>
+                    <Image source={players} style={{ width: 40, height: 40 }} />
+                    <Text>Players</Text>
                 </TouchableOpacity>
             </NavBox>
         );
@@ -48,7 +48,7 @@ class Dashboaord extends Component {
                 <ScrollView>
                     <Card>
                         <CardSection>
-                            <Text>Dashboard things</Text>
+                            <Text>Play Game Home</Text>
                         </CardSection>
                     </Card>
                 </ScrollView>
@@ -80,4 +80,4 @@ const componentActions = {
     toggleNotificationsModal
 };
 
-export default connect(mapStateToProps, componentActions)(Dashboaord);
+export default connect(mapStateToProps, componentActions)(PlayHome);

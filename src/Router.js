@@ -12,63 +12,92 @@ import ViewPerson from './components/ViewPerson';
 import Friends from './components/Friends';
 import AllPlayers from './components/AllPlayers';
 import Messages from './components/Messages';
+import Drawer from './components/Drawer';
+import PlayHome from './components/PlayHome';
 
 const RouterComponent = () => {
     return (
-        <Router sceneStyle={{ paddingTop: 65 }} navigationBarStyle={styles.navStyle}>
+        <Router navigationBarStyle={styles.navStyle}>
             <Scene key="auth">
-                <Scene key="login" component={LoginForm} title="Please Login" initial />
+                <Scene
+                    key="login"
+                    component={LoginForm}
+                    title="Please Login"
+                    sceneStyle={{ paddingTop: 65 }}
+                    initial
+                />
+
                 <Scene
                     key="createUsername"
                     component={CreateUsername}
                     title="Create Username"
+                    sceneStyle={{ paddingTop: 65 }}
                 />
-                <Scene key="forgotPassword" component={ForgotPassword} title="Password Reset" />
+                <Scene
+                    key="forgotPassword"
+                    component={ForgotPassword}
+                    title="Password Reset"
+                    sceneStyle={{ paddingTop: 65 }}
+                />
             </Scene>
 
             <Scene key="main">
                 <Scene
-                    onRight={() => Actions.user()}
-                    rightTitle="User"
+                    key="drawer"
+                    component={Drawer}
+                    hideNavBar
+                >
+                    <Scene
                     key="dashboard"
                     component={Dashboard}
-                    title="Dashboard"
+                    sceneStyle={{ paddingTop: 20 }}
                     initial
-                />
-                <Scene
+                    />
+                    <Scene
+                        key="user"
+                        component={User}
+                        onRight={() => Actions.editUser()}
+                        rightTitle="Edit"
+                        title={getOwnUsername}
+                        sceneStyle={{ paddingTop: 20 }}
+                    />
+                    <Scene
                     key="viewPerson"
                     component={ViewPerson}
-                    sceneStyle={{ paddingTop: 10 }}
+                    sceneStyle={{ paddingTop: 20 }}
                     hideNavBar
-                />
+                    />
+                    <Scene
+                        key="messages"
+                        component={Messages}
+                        title={getOwnUsername}
+                    />
+                    <Scene
+                        key="editUser"
+                        component={EditUser}
+                        title="Edit User"
+                    />
+                    <Scene
+                        key="friends"
+                        component={Friends}
+                        hideNavBar
+                        sceneStyle={{ paddingTop: 14 }}
+                    />
+                    <Scene
+                        key="allPlayers"
+                        component={AllPlayers}
+                        hideNavBar
+                        sceneStyle={{ paddingTop: 14 }}
+                    />
+                </Scene>
+            </Scene>
+
+            <Scene key='play'>
                 <Scene
-                    key="messages"
-                    component={Messages}
-                    title={getOwnUsername}
-                />
-                <Scene
-                    onRight={() => Actions.editUser()}
-                    rightTitle="Edit"
-                    key="user"
-                    component={User}
-                    title={getOwnUsername}
-                />
-                <Scene
-                    key="editUser"
-                    component={EditUser}
-                    title="Edit User"
-                />
-                <Scene
-                    key="friends"
-                    component={Friends}
+                    key="playHome"
+                    component={PlayHome}
+                    sceneStyle={{ paddingTop: 20 }}
                     hideNavBar
-                    sceneStyle={{ paddingTop: 14 }}
-                />
-                <Scene
-                    key="allPlayers"
-                    component={AllPlayers}
-                    hideNavBar
-                    sceneStyle={{ paddingTop: 14 }}
                 />
             </Scene>
         </Router>

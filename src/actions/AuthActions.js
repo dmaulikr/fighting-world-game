@@ -452,7 +452,7 @@ const updateUserSuccess = (dispatch, user) => {
 		payload: user
 	});
     dispatch({ type: PHOTO_UPLOADING_END });
-    Actions.dashboard({ type: 'reset' });
+    Actions.drawer({ type: 'reset' });
     Actions.user();
 };
 
