@@ -14,7 +14,6 @@ import {
 const EmailChangeModal = props => {
     const { visible, onAccept, onDecline, providerData, newEmailChangeEmail } = props;
     const { containerStyle, cardSectionStyle } = styles;
-
     const onPasswordTextChange = text => {
 		props.passwordTextChangedChangeEmail(text);
     };

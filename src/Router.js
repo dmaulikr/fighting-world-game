@@ -76,6 +76,7 @@ const RouterComponent = () => {
                         key="editUser"
                         component={EditUser}
                         title="Edit User"
+                        sceneStyle={{ paddingTop: 20 }}
                     />
                     <Scene
                         key="friends"

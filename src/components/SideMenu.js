@@ -50,7 +50,12 @@ class SideMenu extends Component {
                         </View>
                     </TouchableWithoutFeedback>
 
-                    <TouchableWithoutFeedback onPress={() => Actions.main({ type: 'reset' })}>
+                    <TouchableWithoutFeedback
+                        onPress={() => {
+                            Actions.dashboard({ type: 'reset' });
+                            Actions.refresh({ key: 'drawer', open: value => !value });
+                        }}
+                    >
                         <View>
                             <CardSection>
                                 <View style={styles.imageContainerStyle}>
@@ -91,7 +96,12 @@ class SideMenu extends Component {
                         </View>
                     </TouchableWithoutFeedback>
 
-                    <TouchableWithoutFeedback onPress={() => Actions.allPlayers()}>
+                    <TouchableWithoutFeedback
+                        onPress={() => {
+                            Actions.allPlayers({ type: 'reset' });
+                            Actions.refresh({ key: 'drawer', open: value => !value });
+                        }}
+                    >
                         <View>
                             <CardSection>
                                 <View style={styles.imageContainerStyle}>
@@ -109,7 +119,12 @@ class SideMenu extends Component {
                         </View>
                     </TouchableWithoutFeedback>
 
-                    <TouchableWithoutFeedback onPress={() => Actions.friends()}>
+                    <TouchableWithoutFeedback
+                        onPress={() => {
+                            Actions.friends({ type: 'reset' });
+                            Actions.refresh({ key: 'drawer', open: value => !value });
+                        }}
+                    >
                         <View>
                             <CardSection>
                                 <View style={styles.imageContainerStyle}>
@@ -127,7 +142,12 @@ class SideMenu extends Component {
                         </View>
                     </TouchableWithoutFeedback>
 
-                    <TouchableWithoutFeedback onPress={() => Actions.messages()}>
+                    <TouchableWithoutFeedback
+                        onPress={() => {
+                            Actions.messages({ type: 'reset' });
+                            Actions.refresh({ key: 'drawer', open: value => !value });
+                        }}
+                    >
                         <View>
                             <CardSection>
                                 <View style={styles.imageContainerStyle}>
@@ -145,7 +165,12 @@ class SideMenu extends Component {
                         </View>
                     </TouchableWithoutFeedback>
 
-                    <TouchableWithoutFeedback onPress={() => Actions.editUser()}>
+                    <TouchableWithoutFeedback
+                        onPress={() => {
+                            Actions.editUser({ type: 'reset' });
+                            Actions.refresh({ key: 'drawer', open: value => !value });
+                        }}
+                    >
                         <View>
                             <CardSection>
                                 <View style={styles.imageContainerStyle}>
@@ -189,6 +214,7 @@ class SideMenu extends Component {
 const styles = {
     sideMenuStyle: {
         marginTop: 20,
+        marginLeft: 2,
         flex: 1,
         shadowColor: '#000',
         shadowOffset: { width: -2, height: 0 },

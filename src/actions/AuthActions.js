@@ -433,6 +433,16 @@ export const reauthenticateWithFaceAndUpdateEmail = newEm => {
     };
 };
 
+// this function will update name
+export const updateName = (newName) => {
+    const { currentUser } = firebase.auth();
+    return dispatch => {
+        firebase.database().ref(`profiles/${currentUser.uid}/personal/displayName`).set(newName)
+            .then(() => updateUserSuccess(dispatch, currentUser))
+            .catch(error => console.log(error));
+    };
+};
+
 // this function will update email
 const updateEmail = (dispatch, currentUser, newEm) => {
     currentUser.updateEmail(newEm)
@@ -452,20 +462,8 @@ const updateUserSuccess = (dispatch, user) => {
 		payload: user
 	});
     dispatch({ type: PHOTO_UPLOADING_END });
-    Actions.drawer({ type: 'reset' });
-    Actions.user();
+    Actions.editUser({ type: 'reset' });
 };
-
-// export const viewUser = () => {
-//     console.log('viewUser fired');
-//     return () => {
-//         const { currentUser } = firebase.auth();
-//         firebase.database().ref(`/profiles/${currentUser.uid}`)
-//             .on('value', snapshot => {
-//                 Actions.user();
-//             });
-//     };
-// };
 
 /////////////////////////////////////////////////// PROFILE //////////////////////////////////////
 
@@ -489,7 +487,7 @@ export const setProfileNull = () => {
 };
 
 // this function will update username
-export const updateUsername = (username) => {
+export const updateUsername = username => {
     return dispatch => {
         const { currentUser } = firebase.auth();
         
@@ -513,18 +511,6 @@ export const updateUsername = (username) => {
                         updateUserSuccess(dispatch, currentUser);
                     });
             });
-    };
-};
-
-export const updateUserProfile = (user, displayName) => {
-    return dispatch => {
-        user.updateProfile({ displayName })
-        .then(() => {
-            firebase.database().ref(`profiles/${user.uid}/personal/displayName`).set(displayName)
-                .then(() => updateUserSuccess(dispatch, user))
-                .catch(error => console.log(error));
-        })
-        .catch(error => console.log(error));
     };
 };
 
@@ -631,20 +617,6 @@ export const emptyPeople = () => {
     };
 };
 
-// export const setRequestIcon = (userId) => {
-//     const { currentUser } = firebase.auth();
-//     return dispatch => {
-//         firebase.database().ref(`profiles/${userId}/people/${currentUser.uid}`).once('value')
-//             .then(snapshot => {
-//                 if (snapshot.exists()) {
-//                     dispatch({ type: SET_REQ_ICON, payload: snapshot.val() });
-//                 } else {
-//                     dispatch({ type: SET_REQ_ICON, payload: 'notFriends' });
-//                 }
-//             });
-//     };
-// };
-
 export const sendFriendRequest = userId => {
     const { currentUser } = firebase.auth();
     return () => {
@@ -695,7 +667,7 @@ export const viewPerson = personId => {
                     person: snapshot.val()
                 }
             });
-            Actions.viewPerson();
+            Actions.viewPerson({ type: 'reset' });
         });
     };
 };

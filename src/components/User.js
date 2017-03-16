@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Text, Image, View, TouchableOpacity } from 'react-native';
+import { Text, Image, View, TouchableOpacity, ScrollView } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 
 import { Card, CardSection, Button } from './common';
+
+import NavBox from './NavBox';
 
 import {
     signOut,
@@ -12,6 +14,10 @@ import {
 
 const friends = require('../images/friends.png');
 const messages = require('../images/messages.png');
+
+const notifications = require('../images/notifications.png');
+const menu = require('../images/menu.png');
+const battle = require('../images/battle.png');
 
 class User extends Component {
 
@@ -38,6 +44,21 @@ class User extends Component {
                 </View>
             </CardSection>
         );
+    }
+
+    renderUsername() {
+        const { username } = this.props.profile.personal;
+        if (username) {
+            return (
+                <CardSection>
+                    <View style={styles.textContainerStyle}>
+                        <Text style={styles.textStyle}>
+                            {username}
+                        </Text>
+                    </View>
+                </CardSection>
+            );
+        }
     }
 
     renderButtons() {
@@ -129,12 +150,36 @@ class User extends Component {
         );
     }
 
+    renderBottomNav() {
+        return (
+            <NavBox>
+                <TouchableOpacity onPress={() => Actions.play({ type: 'reset' })} style={styles.navBtnStyle}>
+                    <Image source={battle} style={{ width: 40, height: 40 }} />
+                    <Text>Play</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => this.props.toggleNotificationsModal(true)} style={styles.navBtnStyle}>
+                    <Image source={notifications} style={{ width: 40, height: 40 }} />
+                    <Text>Notifications</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => Actions.refresh({ key: 'drawer', open: value => !value })} style={styles.navBtnStyle}>
+                    <Image source={menu} style={{ width: 40, height: 40 }} />
+                    <Text>Menu</Text>
+                </TouchableOpacity>
+            </NavBox>
+        );
+    }
+
     render() {
         if (this.props.profile && this.props.user) {
             return (
+                <View style={{ flex: 1 }}>
+            <ScrollView>
                 <Card>
-                    
                     {this.renderPhoto()}
+
+                    {this.renderUsername()}
 
                     {this.renderButtons()}
                 
@@ -148,6 +193,11 @@ class User extends Component {
                         {this.renderSignOutButton()}
                     </CardSection>
                 </Card>
+            </ScrollView>
+            <View>
+                {this.renderBottomNav()}
+            </View>
+        </View>
             );
         }
         return (

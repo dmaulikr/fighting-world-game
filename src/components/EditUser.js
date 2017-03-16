@@ -2,14 +2,16 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Text, Image, View, ScrollView, TouchableOpacity } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
+import { Actions } from 'react-native-router-flux';
 
 import { Card, CardSection, Button, Spinner, Input, ConfirmModal } from './common';
 
 import EmailChangeModal from './EmailChangeModal';
 import DeleteAccountModal from './DeleteAccountModal';
+import NavBox from './NavBox';
+import NotificationsModal from './NotificationsModal';
 
 import {
-    updateUserProfile,
     usernameTextChanged,
     nameTextChanged,
     fetchUserInfo,
@@ -22,23 +24,33 @@ import {
     reauthenticateWithFaceAndDelete,
     reauthenticateWithEmailAndDelete,
     reauthenticateWithEmailAndUpdateEmail,
+    updateName,
     updateUsername,
-    chooseAndUploadImage
+    chooseAndUploadImage,
+    toggleNotificationsModal
 } from '../actions';
+
+const menu = require('../images/menu.png');
+const battle = require('../images/battle.png');
+const notifications = require('../images/notifications.png');
 
 class EditUser extends Component {
     state = {
         showEditUsernameScreen: false,
         showEditEmailScreen: false,
+        showEditNameScreen: false,
         showDeleteAccountScreen: false,
         showUploadPhotoOptions: false
     }
 
-    componentDidMount() {
+    componentWillMount() {
         this.props.fetchProfile();
-        const { displayName, editEmail } = this.props.user;
-        this.props.nameTextChanged(displayName);
+        const { editEmail } = this.props.user;
         this.props.editEmailTextChanged(editEmail);
+        this.props.getProvider();
+    }
+
+    componentWillUpdate() {
         this.props.getProvider();
     }
 
@@ -46,10 +58,16 @@ class EditUser extends Component {
         this.props.nameTextChanged(text);
     }
 
+    onNameChangeAccept() {
+        this.props.updateName(this.props.displayName);
+        this.setState({ showEditNameScreen: false });
+    }
+
     onUsernameChangeAccept() {
         const { usernameTestResult, newUsername } = this.props;
         if (usernameTestResult === 'Available') {
             this.props.updateUsername(newUsername);
+            this.setState({ showEditUsernameScreen: false });
         }
     }
 
@@ -64,6 +82,7 @@ class EditUser extends Component {
             newEmailChangeEmail,
             passwordChangeEmail
         );
+        this.setState({ showEditEmailScreen: false });
     }
 
     onAccountDeleteAccept() {
@@ -103,11 +122,6 @@ class EditUser extends Component {
         .catch(error => console.log(error));
     }
 
-    saveChangesPressed() {
-        const { displayName } = this.props;
-        this.props.updateUserProfile(this.props.user, displayName);
-    }
-
     renderPhoto() {
         let { photoURL } = this.props.user;
         if (!photoURL) {
@@ -121,6 +135,20 @@ class EditUser extends Component {
                 />
             </View>
         );
+    }
+
+    renderName() {
+        if (this.props.profile) {
+            return (
+                <View style={styles.textContainerStyle}>
+                    <TouchableOpacity onPress={() => this.setState({ showEditNameScreen: true })}>
+                        <Text style={styles.textStyle}>
+                            {this.props.profile.personal.displayName || 'no name yet'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
     }
 
     renderUsername() {
@@ -201,19 +229,6 @@ class EditUser extends Component {
         );
     }
 
-    renderSaveButton() {
-        if (this.props.loading) {
-            return (
-                <Spinner size="large" />
-            );
-        }
-        return (
-            <Button onPress={this.saveChangesPressed.bind(this)}>
-                Save Changes
-            </Button>
-        );
-    }
-
     renderDeleteAccountButton() {
         const { deleteButtonStyle, deleteButtonTextStyle } = styles;
         const deleteBtnStyles = {
@@ -241,83 +256,114 @@ class EditUser extends Component {
         return <Text style={s}>{usernameTestResult}</Text>;
     }
 
+    renderBottomNav() {
+        return (
+            <NavBox>
+                <TouchableOpacity onPress={() => Actions.play({ type: 'reset' })} style={styles.navBtnStyle}>
+                    <Image source={battle} style={{ width: 40, height: 40 }} />
+                    <Text>Play</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => this.props.toggleNotificationsModal(true)} style={styles.navBtnStyle}>
+                    <Image source={notifications} style={{ width: 40, height: 40 }} />
+                    <Text>Notifications</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => Actions.refresh({ key: 'drawer', open: value => !value })} style={styles.navBtnStyle}>
+                    <Image source={menu} style={{ width: 40, height: 40 }} />
+                    <Text>Menu</Text>
+                </TouchableOpacity>
+            </NavBox>
+        );
+    }
+
     render() {
         return (
-            <View>
-            <ScrollView>
-                <Card>
-                    <CardSection>
-                        {this.renderPhoto()}
-                    </CardSection>
+            <View style={{ flex: 1 }}>
+                <ScrollView>
+                    <Card>
+                        <CardSection>
+                            {this.renderPhoto()}
+                        </CardSection>
 
-                    <CardSection>
-                        {this.renderUploadButton()}
-                    </CardSection>
+                        <CardSection>
+                            {this.renderUploadButton()}
+                        </CardSection>
+                    </Card>
 
-                    <CardSection>
-                        <Input
-                            placeholder="John Smith"
-                            onChangeText={this.onNameChange.bind(this)}
-                            value={this.props.displayName}
-                        />
-                    </CardSection>
+                    <Card>
+                        <CardSection>
+                            {this.renderUsername()}
+                        </CardSection>
+                        <CardSection>
+                            {this.renderName()}
+                        </CardSection>
+                        <CardSection>
+                            {this.renderEmailSection()}
+                        </CardSection>
+                    </Card>
 
-                    <CardSection>
-                        {this.renderSaveButton()}
-                    </CardSection>
-                </Card>
+                    <Card>
+                        <CardSection>
+                            {this.renderDeleteAccountButton()}
+                        </CardSection>
+                    </Card>
+                </ScrollView>
 
-                <Card>
-                    <CardSection>
-                        {this.renderUsername()}
-                    </CardSection>
-                    <CardSection>
-                        {this.renderEmailSection()}
-                    </CardSection>
-                </Card>
+                <View>
+                    {this.renderBottomNav()}
+                </View>
 
-                <Card>
-                    <CardSection>
-                        {this.renderDeleteAccountButton()}
-                    </CardSection>
-                </Card>
-            </ScrollView>
+                <NotificationsModal />
 
-            <ConfirmModal
-                visible={this.state.showEditUsernameScreen}
-                onAccept={this.onUsernameChangeAccept.bind(this)}
-                onDecline={() => this.setState({ showEditUsernameScreen: false })}
-                acceptButtonTitle={'Save'}
-                declineButtonTitle={'Cancel'}
-            >
-                <Input
-                    placeholder="new username"
-                    onChangeText={this.onNewUsernameTextChange.bind(this)}
-                    value={this.props.newUsername}
+                <ConfirmModal
+                    visible={this.state.showEditNameScreen}
+                    onAccept={this.onNameChangeAccept.bind(this)}
+                    onDecline={() => this.setState({ showEditNameScreen: false })}
+                    acceptButtonTitle={'Save'}
+                    declineButtonTitle={'Cancel'}
+                >
+                    <Input
+                        placeholder="new name"
+                        onChangeText={this.onNameChange.bind(this)}
+                        value={this.props.displayName}
+                    />
+                </ConfirmModal>
+
+                <ConfirmModal
+                    visible={this.state.showEditUsernameScreen}
+                    onAccept={this.onUsernameChangeAccept.bind(this)}
+                    onDecline={() => this.setState({ showEditUsernameScreen: false })}
+                    acceptButtonTitle={'Save'}
+                    declineButtonTitle={'Cancel'}
+                >
+                    <Input
+                        placeholder="new username"
+                        onChangeText={this.onNewUsernameTextChange.bind(this)}
+                        value={this.props.newUsername}
+                    />
+                    {this.renderModalHelperText()}
+                </ConfirmModal>
+
+                <EmailChangeModal
+                    visible={this.state.showEditEmailScreen}
+                    onAccept={this.onEmailChangeAccept.bind(this)}
+                    onDecline={() => this.setState({ showEditEmailScreen: false })}
+                    acceptButtonTitle={'Save'}
+                    declineButtonTitle={'Cancel'}
+                    providerData={this.props.providerData}
                 />
-                {this.renderModalHelperText()}
-            </ConfirmModal>
 
-            <EmailChangeModal
-                visible={this.state.showEditEmailScreen}
-                onAccept={this.onEmailChangeAccept.bind(this)}
-                onDecline={() => this.setState({ showEditEmailScreen: false })}
-                acceptButtonTitle={'Save'}
-                declineButtonTitle={'Cancel'}
-                providerData={this.props.providerData}
-            />
-
-            <DeleteAccountModal
-                credential={this.props.credential}
-                providerData={this.props.providerData}
-                visible={this.state.showDeleteAccountScreen}
-                onAccept={this.onAccountDeleteAccept.bind(this)}
-                onDelete={this.onDeleteWithEmail.bind(this)}
-                onDecline={() => this.setState({ showDeleteAccountScreen: false })}
-                acceptButtonTitle={'Delete'}
-                declineButtonTitle={'Cancel'}
-            />
-
+                <DeleteAccountModal
+                    credential={this.props.credential}
+                    providerData={this.props.providerData}
+                    visible={this.state.showDeleteAccountScreen}
+                    onAccept={this.onAccountDeleteAccept.bind(this)}
+                    onDelete={this.onDeleteWithEmail.bind(this)}
+                    onDecline={() => this.setState({ showDeleteAccountScreen: false })}
+                    acceptButtonTitle={'Delete'}
+                    declineButtonTitle={'Cancel'}
+                />
             </View>
         );
     }
@@ -373,6 +419,12 @@ const styles = {
         alignSelf: 'center',
         paddingBottom: 8,
         paddingTop: 8
+    },
+    navBtnStyle: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingLeft: 3,
+        paddingRight: 3
     }
 };
 
@@ -413,7 +465,7 @@ const mapStateToProps = state => {
 };
 
 const componentActions = {
-    updateUserProfile,
+    updateName,
     usernameTextChanged,
     nameTextChanged,
     fetchUserInfo,
@@ -427,7 +479,8 @@ const componentActions = {
     reauthenticateWithEmailAndDelete,
     reauthenticateWithEmailAndUpdateEmail,
     updateUsername,
-    chooseAndUploadImage
+    chooseAndUploadImage,
+    toggleNotificationsModal
 };
 
 export default connect(mapStateToProps, componentActions)(EditUser);

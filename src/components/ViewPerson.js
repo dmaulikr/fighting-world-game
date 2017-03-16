@@ -1,14 +1,21 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Text, Image, View, TouchableOpacity } from 'react-native';
+import { Text, Image, View, TouchableOpacity, ScrollView } from 'react-native';
 import { Actions } from 'react-native-router-flux';
+
 import { Card, CardSection, } from './common';
+
+import NavBox from './NavBox';
 
 import {
     sendFriendRequest,
     approveFriendRequest,
     rejectFriend
 } from '../actions';
+
+const menu = require('../images/menu.png');
+const friends = require('../images/friends.png');
+const request = require('../images/request.png');
 
 class ViewPerson extends Component {
 
@@ -26,13 +33,26 @@ class ViewPerson extends Component {
         );
     }
 
+    renderUsername() {
+        const { textStyle, textContainerStyle } = styles;
+        const { username } = this.props.personToView.person.personal;
+        return (
+            <CardSection>
+                <View style={textContainerStyle}>
+                    <Text style={textStyle}>
+                        {username}
+                    </Text>
+                </View>
+            </CardSection>
+        );
+    }
+
     renderButtons() {
         const { textStyle, plusStyle, minusStyle, delReqStyle } = styles;
         const { personToView, user } = this.props;
         const { uid } = user;
         const { people } = personToView.person;
         const relationship = people ? people[uid] : null;
-        console.log(personToView);
         switch (relationship) {
             case 'friends':
                 return (
@@ -64,49 +84,6 @@ class ViewPerson extends Component {
                     </TouchableOpacity>
                 );
         }
-        /*let icon = (
-            <TouchableOpacity onPress={() => this.props.sendFriendRequest(personToView)}>
-                <Text style={[textStyle, plusStyle]}>Add To Friends?</Text>
-            </TouchableOpacity>
-        );
-        if (relationship === 'friends') {
-            icon = (
-                <TouchableOpacity onPress={() => this.props.rejectFriend(personToView)}>
-                    <Text style={[textStyle, minusStyle]}>Delete Friend?</Text>
-                </TouchableOpacity>
-            );
-        }
-        if (relationship === 'reqReceived') {
-            icon = (
-                <TouchableOpacity onPress={() => this.props.rejectFriend(personToView)}>
-                    <Text style={[textStyle, delReqStyle]}>Delete Request?</Text>
-                </TouchableOpacity>
-            );
-        }
-        if (relationship === 'reqSent') {
-            icon = (
-                <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity onPress={() => this.props.approveFriendRequest(personToView)}>
-                        <Text style={[textStyle, plusStyle, { marginRight: 4 }]}>Approve</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => this.props.rejectFriend(personToView)}>
-                        <Text style={[textStyle, minusStyle, { marginLeft: 4 }]}>Reject</Text>
-                    </TouchableOpacity>
-                </View>
-            );
-        }
-
-        return (
-            <CardSection>
-                <View style={[styles.textContainerStyle, { flexDirection: 'row', justifyContent: 'space-around' }]}>
-                   {icon}
-
-                    <TouchableOpacity onPress={() => console.log('messages')}>
-                        <Text style={[textStyle, { fontWeight: 'bold', color: '#191970' }]}>Message</Text>
-                    </TouchableOpacity>
-                </View>
-            </CardSection>
-        );*/
     }
 
     renderName() {
@@ -161,30 +138,48 @@ class ViewPerson extends Component {
         );
     }
 
+    renderBottomNav() {
+        return (
+            <NavBox>
+                <TouchableOpacity onPress={() => console.log('all friends pressed')} style={styles.navBtnStyle}>
+                    <Image source={friends} style={{ width: 40, height: 40 }} />
+                    <Text>Friends</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => console.log('requests pressed')} style={styles.navBtnStyle}>
+                    <Image source={request} style={{ width: 40, height: 40 }} />
+                    <Text>Requests</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => Actions.refresh({ key: 'drawer', open: value => !value })} style={styles.navBtnStyle}>
+                    <Image source={menu} style={{ width: 40, height: 40 }} />
+                    <Text>Menu</Text>
+                </TouchableOpacity>
+            </NavBox>
+        );
+    }
+
     render() {
         if (this.props.personToView) {
             return (
-                <Card>
-                    <CardSection>
-                        <View style={styles.textContainerStyle}>
-                            <Text style={styles.textStyle}>
-                                {this.props.personToView.person.personal.username}
-                            </Text>
-                        </View>
-                    </CardSection>
-                    <TouchableOpacity style={styles.backBtnStyle} onPress={() => Actions.pop()}>
-                        <Text>Back</Text>
-                    </TouchableOpacity>
-                    {this.renderPhoto()}
+                <View style={{ flex: 1 }}>
+                    <ScrollView>
+                        <Card>
+                            {this.renderPhoto()}
 
-                    {this.renderButtons()}
-                
-                    {this.renderName()}
+                            {this.renderUsername()}
 
-                    {this.renderEmail()}
+                            {this.renderButtons()}
+                        
+                            {this.renderName()}
 
-                    {this.renderStats()}
-                </Card>
+                            {this.renderEmail()}
+
+                            {this.renderStats()}
+                        </Card>
+                    </ScrollView>
+                    {this.renderBottomNav()}
+                </View>
             );
         }
         return (

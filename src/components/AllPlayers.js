@@ -11,7 +11,7 @@ import AllPlayersList from './AllPlayersList';
 import NavBarWithSearch from './NavBarWithSearch';
 import NavBox from './NavBox';
 
-const back = require('../images/back.png');
+const menu = require('../images/menu.png');
 const friends = require('../images/friends.png');
 const request = require('../images/request.png');
 
@@ -23,11 +23,6 @@ class AllPlayers extends Component {
     renderBottomNav() {
         return (
             <NavBox>
-                <TouchableOpacity onPress={() => Actions.pop()} style={styles.navBtnStyle}>
-                    <Image source={back} style={{ width: 40, height: 40 }} />
-                    <Text>Back</Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity onPress={() => console.log('all friends pressed')} style={styles.navBtnStyle}>
                     <Image source={friends} style={{ width: 40, height: 40 }} />
                     <Text>Friends</Text>
@@ -36,6 +31,11 @@ class AllPlayers extends Component {
                 <TouchableOpacity onPress={() => console.log('requests pressed')} style={styles.navBtnStyle}>
                     <Image source={request} style={{ width: 40, height: 40 }} />
                     <Text>Requests</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => Actions.refresh({ key: 'drawer', open: value => !value })} style={styles.navBtnStyle}>
+                    <Image source={menu} style={{ width: 40, height: 40 }} />
+                    <Text>Menu</Text>
                 </TouchableOpacity>
             </NavBox>
         );
